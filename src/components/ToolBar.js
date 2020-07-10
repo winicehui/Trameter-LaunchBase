@@ -221,14 +221,11 @@ class ToolBar extends Component {
                                 rowsMax={1}
                                 placeholder = "New Category"
                                 style={{ padding: '8px', minWidth: '50px' }}
-                                // className={classes.textfield}
+                                className={classes.textfield}
                                 onChange={this.handleAddChange}
                                 onKeyPress={this.onKeyPress}
                                 inputProps={{ maxLength: 140 }}
-                                autoFocus >
-
-                                </TextField>
-
+                                autoFocus />
                         </Popover>
                     </Grid>
                 </Grid>

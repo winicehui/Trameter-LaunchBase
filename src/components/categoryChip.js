@@ -7,6 +7,8 @@ import { Draggable } from 'react-beautiful-dnd';
 const styles = {
     textfield: {
         borderBottomColor: '#353B51',
+        minWidth: '50px',
+        padding: '8px',
         '& .MuiInput-underline:after': {
             borderBottomColor: '#353B51',
         }
@@ -138,11 +140,11 @@ class CategoryChip extends Component {
                         <div
                             ref={provided.innerRef}
                             {...provided.draggableProps}
-                            >
+                        >
                             {!textEdit || !edit 
                                 ? <Chip
-                                    variant={edit && chosenCategory !== category? "outlined" : "default"}
                                     label={category}
+                                    variant={edit && chosenCategory !== category? "outlined" : "default"}
                                     className = { chosenCategory === category ? classes.selectedButton : snapshot.isDragging ? classes.isDraggingButton : classes.Button }
                                     style={{
                                         margin: '9px 10px 9px 10px',
@@ -156,16 +158,15 @@ class CategoryChip extends Component {
                                     onDelete={!edit ? undefined : this.deleteCategory}
                                 />
                                 : <TextField
-                                    rowsMax={1}
                                     value={category}
-                                    style = {{ padding :'8px', width: width, minWidth: '50px' }}
+                                    autoFocus
+                                    rowsMax={1}
                                     className ={classes.textfield}
-                                    onChange={this.handleTextChange}
-                                    onKeyPress= {this.onKeyPress}
+                                    style = {{ width: width }}
                                     inputProps={{ maxLength: 140 }}
                                     {...provided.dragHandleProps}
-                                    autoFocus
-                                    
+                                    onChange={this.handleTextChange}
+                                    onKeyPress= {this.onKeyPress}
                                 />
                             }
                         </div>

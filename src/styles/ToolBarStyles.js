@@ -14,7 +14,7 @@ const styles = {
     // Left Icon
     leftIcon: {
         cursor: 'pointer',
-        // height:'50px';
+        // height:'50px',
         height: '65px',
         padding: '0 14px 0 25px',
         color: '#707070',
@@ -59,15 +59,24 @@ const styles = {
         height: '65px',
         padding: '16px'
     }, 
+    // Middle Toolbar Grid
     MiddleToolbox: {
         borderRight: '1px solid #707070',
         // height: '50px',
         height: '65px'
     },
+    // Right Toolbar Grid
     RightToolbox: {
         // height: '50px',
         height: '65px'
     },   
+    // Add TextField
+    textfield: {
+        borderBottomColor: '#353B51',
+        '& .MuiInput-underline:after': {
+            borderBottomColor: '#353B51',
+        }
+    }, 
 }
 
 export default styles;

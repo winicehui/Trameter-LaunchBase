@@ -9,50 +9,19 @@ import SearchIcon from '@material-ui/icons/Search';
 
 import users_list from '../static/Usertypes'
 
-const styles = {
-    button: {
-        color: '#FFFFFF',
-        textTransform: 'none',
-        fontSize: '18px', 
-        border: '1.5px solid #353B51',
-        fontFamily: 'Helvetica',
-        '&:active': {
-            color: '#353B51',
-            border: '1.5px solid #F2F3F4',
-            backgroundColor: '#F2F3F4', 
-        },
-        '&:hover': {
-            border: '1.5px solid #F2F3F4'
-        },
-    }, 
-    selectedbutton: {
-        color: '#FFFFFF',
-        textTransform: 'none',
-        fontSize: '18px',
-        border: '1.5px solid #FFFFFF',
-        fontFamily: 'Helvetica',
-        '&:active': {
-            color: '#353B51',
-            border: '1.5px solid #F2F3F4',
-            backgroundColor: '#F2F3F4',
-        },
-        '&:hover': {
-            border: '1.5px solid #FFFFFF'
-        },
-    }, 
-}
+import styles from '../styles/HeaderStyles'
 
 class Header extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            pathname: '', 
+            pathname: ''
         }
         this.toggleUser = this.toggleUser.bind(this);
     }
 
     componentDidMount(){
-        const pathname = this.props.location.pathname.substring(1) || 'Enthusiasts'
+        const pathname =  this.props.location.pathname.substring(1) || users_list[0]
         this.setState({ pathname: pathname })
     }
 
@@ -63,16 +32,16 @@ class Header extends Component {
     }    
 
     static getDerivedStateFromProps(nextProps, prevState) {
-        return (nextProps.location.pathname.substring(1) !== prevState.pathname)
-            ? { pathname: nextProps.location.pathname.substring(1) }
+        return (nextProps.location.pathname.substring(1).toLowerCase() !== prevState.pathname.toLowerCase())
+            ? { pathname: nextProps.location.pathname.substring(1) || users_list[0] }
             : null
     }
 
     render() {
         const { classes } = this.props;
         return (
-            <div style={{ backgroundColor: "#353B51", padding: '10px 50px 10px 50px' }}>
-                <h1 style={{ textAlign: "center", color: '#FFFFFF', marginTop: '15px'}}> LaunchBase </h1>
+            <div className = "Header">
+                <h1 className = "Title"> LaunchBase </h1>
                 <Grid
                     container
                     alignItems='center'

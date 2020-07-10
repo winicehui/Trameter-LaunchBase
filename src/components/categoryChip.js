@@ -11,11 +11,28 @@ const styles = {
             borderBottomColor: '#353B51',
         }
     }, 
-    hover:{
+    selectedButton:{
+        backgroundColor: '#707070',
+        color: '#FFFFFF',
         "&:hover": {
-            opacity: '0.8'
-            // fontWeight: '425'
-        }
+            backgroundColor: '#707070',
+            color: '#FFFFFF',
+        }     
+    },
+    isDraggingButton:{
+        backgroundColor: '#D6DADD',
+        color: '#707070',
+        "&:hover": {
+            color: '#2B2B2B'
+        }        
+    }, 
+    Button:{
+        backgroundColor: '#FFFFFF',
+        color: '#707070',
+        "&:hover": {
+            color: '#2B2B2B',
+            backgroundColor: '#FFFFFF'
+        } 
     }
 }
 
@@ -63,9 +80,13 @@ class CategoryChip extends Component {
     }
 
     componentDidUpdate(nextProps) {
+        const { category, index } = this.state
         if (this.state.isLoaded === false) {
-            if (this.props.category !== this.state.category){
-                this.props.handleCategoryChange(this.state.category, this.state.index)
+            if (category.length === 0) {
+                this.props.handleDeleteCategory(index)
+            }
+            else if (this.props.category !== category){
+                this.props.handleCategoryChange(category, index)
             }
             this.setState({ isLoaded: true })
         }
@@ -97,7 +118,7 @@ class CategoryChip extends Component {
         }
     }
 
-    deleteCategory(){
+    deleteCategory= (e) => {
         const { index } = this.state
         this.props.handleDeleteCategory(index)
     }
@@ -105,6 +126,7 @@ class CategoryChip extends Component {
     render() {
         const { category, edit, chosenCategory, index, isLoaded, textEdit } = this.state
         const { classes } = this.props
+        const width = (category.length + 1) * 8 + 'px'
         return (
             isLoaded 
             ? <Draggable 
@@ -119,13 +141,11 @@ class CategoryChip extends Component {
                             >
                             {!textEdit || !edit 
                                 ? <Chip
-                                    variant={edit ? "outlined" : "default"}
+                                    variant={edit && chosenCategory !== category? "outlined" : "default"}
                                     label={category}
-                                    className = {classes.hover}
+                                    className = { chosenCategory === category ? classes.selectedButton : snapshot.isDragging ? classes.isDraggingButton : classes.Button }
                                     style={{
                                         margin: '9px 10px 9px 10px',
-                                        backgroundColor: chosenCategory === category ? '#707070' : snapshot.isDragging ? '#D6DADD' :  '#FFFFFF',
-                                        color: chosenCategory === category ? '#FFFFFF' :  '#707070',
                                         borderRadius: '8px',
                                         fontSize: '17px',
                                         cursor: 'pointer',
@@ -138,13 +158,14 @@ class CategoryChip extends Component {
                                 : <TextField
                                     rowsMax={1}
                                     value={category}
-                                    style = {{ padding :'8px' }}
+                                    style = {{ padding :'8px', width: width, minWidth: '50px' }}
                                     className ={classes.textfield}
                                     onChange={this.handleTextChange}
                                     onKeyPress= {this.onKeyPress}
                                     inputProps={{ maxLength: 140 }}
                                     {...provided.dragHandleProps}
                                     autoFocus
+                                    
                                 />
                             }
                         </div>

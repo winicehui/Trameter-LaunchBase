@@ -51,9 +51,7 @@ class ToolBar extends Component {
         const orderRef = firebase.database().ref('/order/' + pathname)
         orderRef.on('value', (snapshot) => {
             const { chosenCategory } = this.state 
-            let categories = snapshot.val();
-            console.log(categories)
-            console.log(chosenCategory)
+            let categories = snapshot.val(); 
             this.setState({                 
                 categories: categories || [],
                 chosenCategory: chosenCategory.length === 0 ? (categories ? categories[0] : '') : chosenCategory,
@@ -109,14 +107,6 @@ class ToolBar extends Component {
     }
 
     handleCategoryChange = (newCategoryName, index) => {
-        // const { categories, chosenCategory } = this.state
-        // const newCategories = Array.from(categories)
-        // newCategories[index] = newCategoryName 
-        // if (categories[index] === chosenCategory){
-        //     this.setState({ categories: newCategories, chosenCategory: newCategoryName })
-        // } else {
-        //     this.setState({ categories: newCategories  })
-        // }
         const { categories, chosenCategory } = this.state
         if (categories[index] === chosenCategory) {
             this.setState({ chosenCategory: newCategoryName }, users_lists.forEach(user => {
@@ -137,43 +127,25 @@ class ToolBar extends Component {
                     const i = user_categories.indexOf(categories[index])
                     const newCategories = Array.from(user_categories)
                     newCategories[i] = newCategoryName 
-                    firebase.database().ref('/order/'+user).update(newCategories)
+                    firebase.database().ref('/order/'+user).set(newCategories)
                 })
             })
         }
     }
 
     handleDeleteCategory = (index) => {
-        // const { categories, chosenCategory } = this.state
-        // const newCategories = Array.from(categories) 
-        // newCategories.splice(index, 1)
-        // if (categories[index] === chosenCategory) {
-        //     this.setState({ categories: newCategories, chosenCategory: '' })
-        // } else {
-        //     this.setState({ categories: newCategories })
-        // }
-
         const { categories, chosenCategory } = this.state
         const deletedCategory = categories[index]
-        
-        if (deletedCategory === chosenCategory) {
-            this.setState({ chosenCategory: '', isLoaded: false }, users_lists.forEach(user => {
+        console.log(categories[index] === chosenCategory)
+        if (categories[index] === chosenCategory) {
+            this.setState({ chosenCategory: '' }, users_lists.forEach(user => {
                 const orderRef = firebase.database().ref('/order/' + user)
                 orderRef.once('value', snapshot => {
                     const user_categories = snapshot.val() || []
                     const i = user_categories.indexOf(deletedCategory)
                     const newCategories = Array.from(user_categories)
-                    if (i >= 0) { 
-                        newCategories.splice(i, 1)
-                    }
-                    console.log(user)
-                    console.log(user + " deletedCategory " + deletedCategory)
-                    console.log(user + " user_Categories " +user_categories)
-                    console.log(user + " index " +i)
-                    console.log(user + " newCategories " + newCategories)
-
-                    
-                    firebase.database().ref('/order/' + user).update(newCategories)
+                    newCategories.splice(i, 1)
+                    firebase.database().ref('/order/' + user).set(newCategories)
                 })
             }))
         } else {
@@ -184,10 +156,11 @@ class ToolBar extends Component {
                     const i = user_categories.indexOf(deletedCategory)
                     const newCategories = Array.from(user_categories)
                     newCategories.splice(i, 1)
-                    firebase.database().ref('/order/' + user).update(newCategories)
+                    firebase.database().ref('/order/' + user).set(newCategories)
+
                 })
             })
-    }
+        }
     }
 
     togglePopper = (e) =>{
@@ -204,13 +177,21 @@ class ToolBar extends Component {
 
     onKeyPress = (e) => {
         if (e.key === 'Enter') {
-            const { newCategory, openAdd, categories } = this.state
+            const { newCategory, openAdd } = this.state
             if (newCategory.length === 0) {
                 this.setState({ anchorE1: null, openAdd: !openAdd, newCategory: '' })
             } else {
-                const newCategories = Array.from(categories)
-                newCategories.push(newCategory)
-                this.setState({ anchorE1: null, openAdd: !openAdd, newCategory: '', categories: newCategories })
+                this.setState({ anchorE1: null, openAdd: !openAdd, newCategory: ''},
+                    users_lists.forEach(user => {
+                        const orderRef = firebase.database().ref('/order/' + user)
+                        orderRef.once('value', snapshot => {
+                            const user_categories = snapshot.val() || []
+                            const newCategories = Array.from(user_categories)
+                            newCategories.push(newCategory)
+                            firebase.database().ref('/order/' + user).set(newCategories)
+                        })
+                    })
+                )
             }
         }
     }
@@ -228,10 +209,6 @@ class ToolBar extends Component {
         newCategories.splice(source.index, 1);
         newCategories.splice(destination.index, 0, draggableId);
 
-        // this.setState({
-        //     categories: newCategories
-        // })
-        
         firebase.database().ref('/order/' + pathname).update(newCategories)
     }
 
@@ -240,7 +217,6 @@ class ToolBar extends Component {
         const { web, categories, chosenCategory, edit, anchorE1, openAdd, isLoaded } = this.state
 
         const id = openAdd ? 'simple-popover' : undefined;
-        // const open = anchorE1 === null ? false : true;
         return (
             isLoaded ? 
             <DragDropContext onDragEnd={this.onDragEnd}>

@@ -28,7 +28,6 @@ class CategoryChip extends Component {
     }
 
     componentDidMount(){
-        console.log("componentDidMount")
         const { category, edit, chosenCategory, index } = this.props
         this.setState({
             index: index,
@@ -105,6 +104,7 @@ class CategoryChip extends Component {
         const { category, edit, chosenCategory, index, isLoaded, textEdit } = this.state
         const { classes } = this.props
         const width = (category.length + 1) * 8 + 'px'
+        console.log(chosenCategory)
         return (
             isLoaded 
             ? <Draggable 

@@ -8,8 +8,9 @@ import EditIcon from '@material-ui/icons/Edit';
 import DoneIcon from '@material-ui/icons/Done';
 
 import CategoryChip from './categoryChip'
+import users_lists from '../static/Usertypes'
 
-import sampleCatList from '../static/sampleCatList'
+import firebase from '../firebase'
 
 import styles from '../styles/ToolBarStyles'
 
@@ -18,15 +19,18 @@ class ToolBar extends Component {
         super(props)
         this.state = {
             web: 'Online', 
+            pathname: '',
 
-            categories: sampleCatList, 
-            chosenCategory: sampleCatList[0] || '', 
+            categories: [], 
+            chosenCategory: '', 
 
             edit: false,
 
             anchorE1: null, 
             openAdd: false, 
-            newCategory: ''
+            newCategory: '',
+
+            isLoaded: false
         }
         this.toggleOnOff = this.toggleOnOff.bind(this);
         this.toggleEdit = this.toggleEdit.bind(this);
@@ -36,10 +40,54 @@ class ToolBar extends Component {
         this.handleDeleteCategory = this.handleDeleteCategory.bind(this);
 
         this.togglePopper = this.togglePopper.bind(this);
-        this.handleAddChange = this.handleAddChange.bind(this);
+        this.handleAddTextChange = this.handleAddTextChange.bind(this);
         this.onKeyPress = this.onKeyPress.bind(this);
 
         this.onDragEnd = this.onDragEnd.bind(this);
+    }
+
+    update = () => {
+        const { pathname } = this.state
+        const orderRef = firebase.database().ref('/order/' + pathname)
+        orderRef.on('value', (snapshot) => {
+            const { chosenCategory } = this.state 
+            let categories = snapshot.val();
+            console.log(categories)
+            console.log(chosenCategory)
+            this.setState({                 
+                categories: categories || [],
+                chosenCategory: chosenCategory.length === 0 ? (categories ? categories[0] : '') : chosenCategory,
+                isLoaded: true,                 
+            })
+        })
+    }
+
+    componentDidMount(){
+        this.update()
+    }
+
+    static getDerivedStateFromProps(nextProps, prevState) {
+        return (nextProps.pathname !== prevState.pathname)
+            ? { web: 'Online',
+                pathname: nextProps.pathname,
+
+                chosenCategory: '',
+
+                edit: false,
+
+                anchorE1: null,
+                openAdd: false,
+                newCategory: '',
+
+                isLoaded: false
+            }
+            : null
+    }
+
+    componentDidUpdate(nextProps) {
+        if (this.state.isLoaded === false) {
+            this.update()
+        }
     }
 
     toggleOnOff = (e) => {
@@ -61,25 +109,85 @@ class ToolBar extends Component {
     }
 
     handleCategoryChange = (newCategoryName, index) => {
+        // const { categories, chosenCategory } = this.state
+        // const newCategories = Array.from(categories)
+        // newCategories[index] = newCategoryName 
+        // if (categories[index] === chosenCategory){
+        //     this.setState({ categories: newCategories, chosenCategory: newCategoryName })
+        // } else {
+        //     this.setState({ categories: newCategories  })
+        // }
         const { categories, chosenCategory } = this.state
-        const newCategories = Array.from(categories)
-        newCategories[index] = newCategoryName 
-        if (categories[index] === chosenCategory){
-            this.setState({ categories: newCategories, chosenCategory: newCategoryName })
-        } else {
-        this.setState({ categories: newCategories  })
+        if (categories[index] === chosenCategory) {
+            this.setState({ chosenCategory: newCategoryName }, users_lists.forEach(user => {
+                const orderRef = firebase.database().ref('/order/' + user)
+                orderRef.once('value', snapshot => {
+                    const user_categories = snapshot.val() || []
+                    const i = user_categories.indexOf(categories[index])
+                    const newCategories = Array.from(user_categories)
+                    newCategories[i] = newCategoryName
+                    firebase.database().ref('/order/' + user).update(newCategories)
+                })
+            }))
+        } else { 
+            users_lists.forEach(user => {
+                const orderRef = firebase.database().ref('/order/' + user)
+                orderRef.once('value', snapshot => {
+                    const user_categories = snapshot.val() || []
+                    const i = user_categories.indexOf(categories[index])
+                    const newCategories = Array.from(user_categories)
+                    newCategories[i] = newCategoryName 
+                    firebase.database().ref('/order/'+user).update(newCategories)
+                })
+            })
         }
     }
 
     handleDeleteCategory = (index) => {
+        // const { categories, chosenCategory } = this.state
+        // const newCategories = Array.from(categories) 
+        // newCategories.splice(index, 1)
+        // if (categories[index] === chosenCategory) {
+        //     this.setState({ categories: newCategories, chosenCategory: '' })
+        // } else {
+        //     this.setState({ categories: newCategories })
+        // }
+
         const { categories, chosenCategory } = this.state
-        const newCategories = Array.from(categories) 
-        newCategories.splice(index, 1)
-        if (categories[index] === chosenCategory) {
-            this.setState({ categories: newCategories, chosenCategory: '' })
+        const deletedCategory = categories[index]
+        
+        if (deletedCategory === chosenCategory) {
+            this.setState({ chosenCategory: '', isLoaded: false }, users_lists.forEach(user => {
+                const orderRef = firebase.database().ref('/order/' + user)
+                orderRef.once('value', snapshot => {
+                    const user_categories = snapshot.val() || []
+                    const i = user_categories.indexOf(deletedCategory)
+                    const newCategories = Array.from(user_categories)
+                    if (i >= 0) { 
+                        newCategories.splice(i, 1)
+                    }
+                    console.log(user)
+                    console.log(user + " deletedCategory " + deletedCategory)
+                    console.log(user + " user_Categories " +user_categories)
+                    console.log(user + " index " +i)
+                    console.log(user + " newCategories " + newCategories)
+
+                    
+                    firebase.database().ref('/order/' + user).update(newCategories)
+                })
+            }))
         } else {
-            this.setState({ categories: newCategories })
-        }
+            users_lists.forEach(user => {
+                const orderRef = firebase.database().ref('/order/' + user)
+                orderRef.once('value', snapshot => {
+                    const user_categories = snapshot.val() || []
+                    const i = user_categories.indexOf(deletedCategory)
+                    const newCategories = Array.from(user_categories)
+                    newCategories.splice(i, 1)
+                    firebase.database().ref('/order/' + user).update(newCategories)
+                })
+            })
+    }
     }
 
     togglePopper = (e) =>{
@@ -89,7 +197,7 @@ class ToolBar extends Component {
             : this.setState({ anchorE1: e.currentTarget, openAdd: !openAdd })
     }
 
-    handleAddChange = (e) => {
+    handleAddTextChange = (e) => {
         const add = e.target.value
         this.setState({ newCategory: add })
     }
@@ -115,25 +223,26 @@ class ToolBar extends Component {
             destination.index === source.index)
         ) return;
 
-        const { categories } = this.state
+        const { categories, pathname } = this.state
         const newCategories = Array.from(categories)
         newCategories.splice(source.index, 1);
         newCategories.splice(destination.index, 0, draggableId);
 
-        this.setState({
-            categories: newCategories
-        })
+        // this.setState({
+        //     categories: newCategories
+        // })
+        
+        firebase.database().ref('/order/' + pathname).update(newCategories)
     }
 
     render() {
         const { classes } = this.props;
-        const { web, categories, chosenCategory, edit, anchorE1, openAdd } = this.state
+        const { web, categories, chosenCategory, edit, anchorE1, openAdd, isLoaded } = this.state
 
         const id = openAdd ? 'simple-popover' : undefined;
         // const open = anchorE1 === null ? false : true;
-        console.log(categories, chosenCategory)
-
         return (
+            isLoaded ? 
             <DragDropContext onDragEnd={this.onDragEnd}>
                 <Grid
                     container
@@ -222,7 +331,7 @@ class ToolBar extends Component {
                                 placeholder = "New Category"
                                 style={{ padding: '8px', minWidth: '50px' }}
                                 className={classes.textfield}
-                                onChange={this.handleAddChange}
+                                onChange={this.handleAddTextChange}
                                 onKeyPress={this.onKeyPress}
                                 inputProps={{ maxLength: 140 }}
                                 autoFocus />
@@ -230,6 +339,7 @@ class ToolBar extends Component {
                     </Grid>
                 </Grid>
             </DragDropContext>
+            : null
         );
     }
 }

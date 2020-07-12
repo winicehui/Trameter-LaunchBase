@@ -4,39 +4,7 @@ import { withStyles } from "@material-ui/core/styles";
 import { Chip , TextField } from '@material-ui/core';
 import { Draggable } from 'react-beautiful-dnd';
 
-const styles = {
-    textfield: {
-        borderBottomColor: '#353B51',
-        minWidth: '50px',
-        padding: '8px',
-        '& .MuiInput-underline:after': {
-            borderBottomColor: '#353B51',
-        }
-    }, 
-    selectedButton:{
-        backgroundColor: '#707070',
-        color: '#FFFFFF',
-        "&:hover": {
-            backgroundColor: '#707070',
-            color: '#FFFFFF',
-        }     
-    },
-    isDraggingButton:{
-        backgroundColor: '#D6DADD',
-        color: '#707070',
-        "&:hover": {
-            color: '#2B2B2B'
-        }        
-    }, 
-    Button:{
-        backgroundColor: '#FFFFFF',
-        color: '#707070',
-        "&:hover": {
-            color: '#2B2B2B',
-            backgroundColor: '#FFFFFF'
-        } 
-    }
-}
+import styles from '../styles/categoryChipStyles'
 
 class CategoryChip extends Component {
     constructor(props) {
@@ -60,18 +28,24 @@ class CategoryChip extends Component {
     }
 
     componentDidMount(){
+        console.log("componentDidMount")
         const { category, edit, chosenCategory, index } = this.props
         this.setState({
-            category: category, 
-            edit: edit, 
-            chosenCategory:chosenCategory, 
             index: index,
+            category: category, 
+            chosenCategory: chosenCategory,
+            
+            edit: edit, 
+            textEdit: false,
+            
             isLoaded: true, 
         })
     }
 
     static getDerivedStateFromProps(nextProps, prevState) {
-        return (nextProps.chosenCategory !== prevState.chosenCategory || nextProps.edit !== prevState.edit || nextProps.index !== prevState.index)
+        return (nextProps.chosenCategory !== prevState.chosenCategory || 
+            nextProps.edit !== prevState.edit || 
+            nextProps.index !== prevState.index)
             ? { chosenCategory: nextProps.chosenCategory, 
                 edit: nextProps.edit, 
                 index: nextProps.index,
@@ -84,12 +58,14 @@ class CategoryChip extends Component {
     componentDidUpdate(nextProps) {
         const { category, index } = this.state
         if (this.state.isLoaded === false) {
-            if (category.length === 0) {
-                this.props.handleDeleteCategory(index)
-            }
-            else if (this.props.category !== category){
-                this.props.handleCategoryChange(category, index)
-            }
+            // SEEMS IRRELEVANT -- SHOULD ASK IF YOU WOULD LIKE TO SAVE 
+            // if (category.length === 0) {
+            //     console.log("WOWOTOASDF")
+            //     this.props.handleDeleteCategory(index)
+            // }
+            // else if (this.props.category !== category){
+            //     this.props.handleCategoryChange(category, index)
+            // }
             this.setState({ isLoaded: true })
         }
     }

@@ -49,7 +49,7 @@ class Header extends Component {
                     spacing = {4}
                 >
                     {users_list.map((element, i) =>
-                        (<Grid item xs={5} sm={3} md={2} lg={2} key={i}>
+                        (<Grid item xs={7} sm={4} md={3} lg={2} key={i}>
                             <Button 
                                 className={ this.state.pathname.toLowerCase() === element.toLowerCase() 
                                     ? classes.selectedbutton 
@@ -62,7 +62,7 @@ class Header extends Component {
                         </Grid>)
                     )}
 
-                    <Grid item xs={5} sm={3} md={2} lg={2}>
+                    <Grid item xs={7} sm={4} md={3} lg={2}>
                         <TextField
                             variant="outlined"
                             fullWidth

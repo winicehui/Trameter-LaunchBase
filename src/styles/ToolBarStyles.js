@@ -11,12 +11,10 @@ const styles = {
             color: '#2B2B2B'
         }, 
     },
-    // Left Icon
-    leftIcon: {
+    Icon: {
         cursor: 'pointer',
         // height:'50px',
         height: '65px',
-        padding: '0 14px 0 25px',
         color: '#707070',
         "&:hover": {
             color: '#2B2B2B'
@@ -28,23 +26,6 @@ const styles = {
             color: '#2B2B2B'
         }
     },
-    // Right Icon
-    rightIcon: {
-        cursor: 'pointer',
-        // height: '50px',
-        height: '65px',
-        padding: '0 25px 0 14px',
-        color: '#707070',
-        "&:hover": {
-            color: '#2B2B2B'
-        },
-        "&:focus": {
-            color: '#2B2B2B'
-        },
-        "&:active": {
-            color: '#2B2B2B'
-        }
-    }, 
     // Toolbar Grid
     Toolbox: {
         borderWidth: '0px 0px 1px 0px',

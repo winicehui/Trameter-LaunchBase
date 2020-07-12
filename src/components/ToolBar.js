@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { withStyles } from "@material-ui/core/styles";
 
-import { Grid, Select, MenuItem, Popover, TextField } from '@material-ui/core';
+import { Grid, Select, MenuItem, Popover, TextField, Container } from '@material-ui/core';
 import { DragDropContext, Droppable } from 'react-beautiful-dnd';
 import AddIcon from '@material-ui/icons/Add';
 import EditIcon from '@material-ui/icons/Edit';
@@ -51,10 +51,10 @@ class ToolBar extends Component {
         const orderRef = firebase.database().ref('/order/' + pathname)
         orderRef.on('value', (snapshot) => {
             const { chosenCategory } = this.state 
-            let categories = snapshot.val(); 
+            let categories = snapshot.val();
             this.setState({                 
                 categories: categories || [],
-                chosenCategory: chosenCategory.length === 0 ? (categories ? categories[0] : '') : chosenCategory,
+                chosenCategory: !chosenCategory ? (categories ? categories[0] : '') : chosenCategory,
                 isLoaded: true,                 
             })
         })
@@ -116,7 +116,7 @@ class ToolBar extends Component {
                     const i = user_categories.indexOf(categories[index])
                     const newCategories = Array.from(user_categories)
                     newCategories[i] = newCategoryName
-                    firebase.database().ref('/order/' + user).update(newCategories)
+                    firebase.database().ref('/order/' + user).set(newCategories)
                 })
             }))
         } else { 
@@ -136,9 +136,8 @@ class ToolBar extends Component {
     handleDeleteCategory = (index) => {
         const { categories, chosenCategory } = this.state
         const deletedCategory = categories[index]
-        console.log(categories[index] === chosenCategory)
         if (categories[index] === chosenCategory) {
-            this.setState({ chosenCategory: '' }, users_lists.forEach(user => {
+            this.setState({ chosenCategory: categories[(index+1)] }, users_lists.forEach(user => {
                 const orderRef = firebase.database().ref('/order/' + user)
                 orderRef.once('value', snapshot => {
                     const user_categories = snapshot.val() || []
@@ -157,7 +156,6 @@ class ToolBar extends Component {
                     const newCategories = Array.from(user_categories)
                     newCategories.splice(i, 1)
                     firebase.database().ref('/order/' + user).set(newCategories)
-
                 })
             })
         }
@@ -181,7 +179,9 @@ class ToolBar extends Component {
             if (newCategory.length === 0) {
                 this.setState({ anchorE1: null, openAdd: !openAdd, newCategory: '' })
             } else {
-                this.setState({ anchorE1: null, openAdd: !openAdd, newCategory: ''},
+                this.setState({ 
+                    anchorE1: null, openAdd: !openAdd, 
+                    newCategory: '', chosenCategory: newCategory},
                     users_lists.forEach(user => {
                         const orderRef = firebase.database().ref('/order/' + user)
                         orderRef.once('value', snapshot => {
@@ -209,12 +209,12 @@ class ToolBar extends Component {
         newCategories.splice(source.index, 1);
         newCategories.splice(destination.index, 0, draggableId);
 
-        firebase.database().ref('/order/' + pathname).update(newCategories)
+        firebase.database().ref('/order/' + pathname).set(newCategories)
     }
 
     render() {
         const { classes } = this.props;
-        const { web, categories, chosenCategory, edit, anchorE1, openAdd, isLoaded } = this.state
+        const { web, categories, chosenCategory, edit, anchorE1, openAdd, isLoaded, newCategory } = this.state
 
         const id = openAdd ? 'simple-popover' : undefined;
         return (
@@ -227,6 +227,9 @@ class ToolBar extends Component {
                     className= {classes.Toolbox}
                 >
                     <Grid item 
+                        xs = {12}
+                        sm = {2}
+                        md = {2}
                         lg={1} 
                         className= {classes.LeftToolbox}
                     >
@@ -245,6 +248,9 @@ class ToolBar extends Component {
                     </Grid>
 
                     <Grid item 
+                        xs = {12}
+                        sm = {8}
+                        md = {8}
                         lg = {10}
                         className = {classes.MiddleToolbox}
                     >
@@ -281,13 +287,30 @@ class ToolBar extends Component {
                     </Grid>
 
                     <Grid item 
+                        xs = {12}
+                        sm = {2}
+                        md={2}
                         lg={1} 
                         className = {classes.RightToolbox}
                     >
-                        {edit
-                        ? <DoneIcon className ={classes.leftIcon} onClick={this.toggleEdit} />
-                        : <EditIcon className={classes.leftIcon}  onClick={this.toggleEdit} />}
-                        <AddIcon className={classes.rightIcon} onClick={this.togglePopper} aria-describedby={id} />
+                        <Grid
+                            container
+                        >
+                            <Grid item align = "center"
+                                xs = {6} 
+                            > 
+                                {edit
+                                    ? <DoneIcon className ={classes.Icon} onClick={this.toggleEdit} />
+                                    : <EditIcon className={classes.Icon}  onClick={this.toggleEdit} />}
+                            </Grid>
+                            
+                                <Grid item align="center"
+                                xs={6}
+                            > 
+                                <AddIcon className={classes.Icon} onClick={this.togglePopper} aria-describedby={id} />
+                            </Grid>
+                        </Grid>
+                            
                         <Popover
                             anchorOrigin={{
                                 vertical: 'bottom',
@@ -304,6 +327,7 @@ class ToolBar extends Component {
                         >
                             <TextField
                                 rowsMax={1}
+                                value = {newCategory}
                                 placeholder = "New Category"
                                 style={{ padding: '8px', minWidth: '50px' }}
                                 className={classes.textfield}

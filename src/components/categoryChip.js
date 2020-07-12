@@ -49,14 +49,14 @@ class CategoryChip extends Component {
                 edit: nextProps.edit, 
                 index: nextProps.index,
                 textEdit: !nextProps.edit ? false : prevState.textEdit, 
-                isLoaded: false 
+                // isLoaded: false 
             }
             : null
     }
 
-    componentDidUpdate(nextProps) {
-        const { category, index } = this.state
-        if (this.state.isLoaded === false) {
+    // componentDidUpdate(nextProps) {
+    //     const { category, index } = this.state
+    //     if (this.state.isLoaded === false) {
             // SEEMS IRRELEVANT -- SHOULD ASK IF YOU WOULD LIKE TO SAVE 
             // if (category.length === 0) {
             //     console.log("WOWOTOASDF")
@@ -65,9 +65,9 @@ class CategoryChip extends Component {
             // else if (this.props.category !== category){
             //     this.props.handleCategoryChange(category, index)
             // }
-            this.setState({ isLoaded: true })
-        }
-    }
+    //         this.setState({ isLoaded: true })
+    //     }
+    // }
     
     toggleCategory = (e, category) => {
         this.props.handleToggleCategory(category)
@@ -104,7 +104,6 @@ class CategoryChip extends Component {
         const { category, edit, chosenCategory, index, isLoaded, textEdit } = this.state
         const { classes } = this.props
         const width = (category.length + 1) * 8 + 'px'
-        console.log(chosenCategory)
         return (
             isLoaded 
             ? <Draggable 

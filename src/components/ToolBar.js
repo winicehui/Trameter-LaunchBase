@@ -50,13 +50,16 @@ class ToolBar extends Component {
         const { pathname } = this.state
         const orderRef = firebase.database().ref('/order/' + pathname)
         orderRef.on('value', (snapshot) => {
-            const { chosenCategory } = this.state 
+            const { chosenCategory, web } = this.state 
             let categories = snapshot.val();
+            const newChosenCategory = !chosenCategory ? (categories ? categories[0] : '') : chosenCategory
             this.setState({                 
                 categories: categories || [],
-                chosenCategory: !chosenCategory ? (categories ? categories[0] : '') : chosenCategory,
+                chosenCategory: newChosenCategory,
                 isLoaded: true,                 
             })
+            this.props.handleToggleCategory(newChosenCategory)
+            this.props.handleToggleWeb(web)
         })
     }
 
@@ -92,8 +95,10 @@ class ToolBar extends Component {
         const { web } = this.state 
         if (web === 'Online'){
             this.setState ({ web: 'Offline' })
+            this.props.handleToggleWeb('Offline')
         } else {
             this.setState({ web: 'Online' })
+            this.props.handleToggleWeb('Online')
         }
     }
 
@@ -104,6 +109,7 @@ class ToolBar extends Component {
 
     handleToggleCategory = (category) => {
         this.setState({ chosenCategory: category })
+        this.props.handleToggleCategory(category)
     }
 
     handleCategoryChange = (newCategoryName, index) => {
@@ -119,6 +125,7 @@ class ToolBar extends Component {
                     firebase.database().ref('/order/' + user).set(newCategories)
                 })
             }))
+            this.props.handleToggleCategory(newCategoryName)
         } else { 
             users_lists.forEach(user => {
                 const orderRef = firebase.database().ref('/order/' + user)
@@ -147,6 +154,7 @@ class ToolBar extends Component {
                     firebase.database().ref('/order/' + user).set(newCategories)
                 })
             }))
+            this.props.handleToggleCategory(categories[(index+1)])
         } else {
             users_lists.forEach(user => {
                 const orderRef = firebase.database().ref('/order/' + user)
@@ -192,6 +200,7 @@ class ToolBar extends Component {
                         })
                     })
                 )
+                this.props.handleToggleCategory(newCategory)
             }
         }
     }
@@ -247,96 +256,106 @@ class ToolBar extends Component {
                         </Select>
                     </Grid>
 
-                    <Grid item 
-                        xs = {12}
-                        sm = {8}
-                        md = {8}
-                        lg = {10}
-                        className = {classes.MiddleToolbox}
-                    >
-                        <Droppable droppableId = "categories" direction = "horizontal">
-                            {(provided, snapshot) => (
-                                <div
-                                    style={{ 
-                                        display: 'flex', 
-                                        overflowX: 'scroll', 
-                                        // flexWrap: edit ? 'wrap': 'nowrap', 
-                                        backgroundColor: !snapshot.isDraggingOver && !edit ? '#FFFFFF' : '#F2F3F4'
-                                    }}
-                                    ref = {provided.innerRef}
-                                    {...provided.droppableProps}
-                                >
-                                    {categories.map((element, i) =>
-                                        (
-                                            <CategoryChip 
-                                                key = {element} 
-                                                index = {i} 
-                                                category = {element} 
-                                                chosenCategory = {chosenCategory}
-                                                edit = {edit} 
-                                                handleToggleCategory = {this.handleToggleCategory}
-                                                handleCategoryChange = {this.handleCategoryChange}
-                                                handleDeleteCategory = {this.handleDeleteCategory}
-                                            /> 
-                                        )
-                                    )}
-                                    {provided.placeholder}
-                                </div>
-                            )}
-                        </Droppable>   
-                    </Grid>
+                    {web === "Online"
+                        ? <React.Fragment>
+                        <Grid item 
+                            xs = {12}
+                            sm = {8}
+                            md = {8}
+                            lg = {10}
+                            className = {classes.MiddleToolbox}
+                            >
+                    
+                                <Droppable droppableId = "categories" direction = "horizontal">
+                                        {(provided, snapshot) => (
+                                            <div
+                                                style={{ 
+                                                    display: 'flex', 
+                                                    overflowX: 'scroll', 
+                                                    // flexWrap: edit ? 'wrap': 'nowrap', 
+                                                    backgroundColor: !snapshot.isDraggingOver && !edit ? '#FFFFFF' : '#F2F3F4'
+                                                }}
+                                                ref = {provided.innerRef}
+                                                {...provided.droppableProps}
+                                            >
+                                                {categories.map((element, i) =>
+                                                    (
+                                                        <CategoryChip 
+                                                            key = {element} 
+                                                            index = {i} 
+                                                            category = {element} 
+                                                            chosenCategory = {chosenCategory}
+                                                            edit = {edit} 
+                                                            handleToggleCategory = {this.handleToggleCategory}
+                                                            handleCategoryChange = {this.handleCategoryChange}
+                                                            handleDeleteCategory = {this.handleDeleteCategory}
+                                                        /> 
+                                                    )
+                                                )}
+                                                {provided.placeholder}
+                                            </div>
+                                        )}
+                                    </Droppable>   
+                            </Grid>
 
-                    <Grid item 
-                        xs = {12}
-                        sm = {2}
-                        md={2}
-                        lg={1} 
-                        className = {classes.RightToolbox}
-                    >
-                        <Grid
-                            container
-                        >
-                            <Grid item align = "center"
-                                xs = {6} 
-                            > 
-                                {edit
-                                    ? <DoneIcon className ={classes.Icon} onClick={this.toggleEdit} />
-                                    : <EditIcon className={classes.Icon}  onClick={this.toggleEdit} />}
+                            <Grid item 
+                                xs = {12}
+                                sm = {2}
+                                md={2}
+                                lg={1} 
+                                className = {classes.RightToolbox}
+                            >
+                                <Grid
+                                    container
+                                >
+                                    <Grid item align="center"
+                                        xs = {6} 
+                                    > 
+                                        {edit
+                                            ? <DoneIcon className ={classes.Icon} onClick={this.toggleEdit} />
+                                            : <EditIcon className={classes.Icon}  onClick={this.toggleEdit} />}
+                                    </Grid>
+                                    
+                                        <Grid item align="center"
+                                        xs={6}
+                                    > 
+                                        <AddIcon className={classes.Icon} onClick={this.togglePopper} aria-describedby={id} />
+                                    </Grid>
+                                </Grid>
+                                    
+                                <Popover
+                                    anchorOrigin={{
+                                        vertical: 'bottom',
+                                        horizontal: 'center',
+                                    }}
+                                    transformOrigin={{
+                                        vertical: 'center',
+                                        horizontal: 'center',
+                                    }}
+                                    anchorEl= {anchorE1}
+                                    open = {openAdd}
+                                    id = {id}
+                                    onClose= {this.togglePopper}
+                                >
+                                    <TextField
+                                        rowsMax={1}
+                                        value = {newCategory}
+                                        placeholder = "New Category"
+                                        style={{ padding: '8px', minWidth: '50px' }}
+                                        className={classes.textfield}
+                                        onChange={this.handleAddTextChange}
+                                        onKeyPress={this.onKeyPress}
+                                        inputProps={{ maxLength: 140 }}
+                                        autoFocus />
+                                </Popover>
                             </Grid>
-                            
-                                <Grid item align="center"
-                                xs={6}
-                            > 
-                                <AddIcon className={classes.Icon} onClick={this.togglePopper} aria-describedby={id} />
-                            </Grid>
-                        </Grid>
-                            
-                        <Popover
-                            anchorOrigin={{
-                                vertical: 'bottom',
-                                horizontal: 'center',
-                            }}
-                            transformOrigin={{
-                                vertical: 'center',
-                                horizontal: 'center',
-                            }}
-                            anchorEl= {anchorE1}
-                            open = {openAdd}
-                            id = {id}
-                            onClose= {this.togglePopper}
-                        >
-                            <TextField
-                                rowsMax={1}
-                                value = {newCategory}
-                                placeholder = "New Category"
-                                style={{ padding: '8px', minWidth: '50px' }}
-                                className={classes.textfield}
-                                onChange={this.handleAddTextChange}
-                                onKeyPress={this.onKeyPress}
-                                inputProps={{ maxLength: 140 }}
-                                autoFocus />
-                        </Popover>
-                    </Grid>
+                        </React.Fragment>
+                            : <Grid item
+                                xs={12}
+                                sm={10}
+                                md={10}
+                                lg={11}
+                            /> }
                 </Grid>
             </DragDropContext>
             : null

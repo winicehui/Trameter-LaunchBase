@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { withRouter } from "react-router";
 
 import ToolBar from './ToolBar'
+import Table from './Table'
 import users_list from '../static/Usertypes'
 
 class Body extends Component {
@@ -9,7 +10,10 @@ class Body extends Component {
         super(props)
         this.state = {
             pathname: '',
-            isLoaded: false
+            isLoaded: false, 
+
+            chosenCategory: '',
+            web: 'Online'
         }
     }
 
@@ -24,11 +28,22 @@ class Body extends Component {
             : null
     }
 
+    handleToggleCategory = (category) => {
+        this.setState({ chosenCategory: category})
+    }
+
+    handleToggleWeb = (web) => {
+        this.setState({ web: web })
+    }
+
     render() {
-        const {pathname, isLoaded} = this.state
+        const {pathname, isLoaded, chosenCategory, web} = this.state
         return (
             isLoaded 
-            ? <ToolBar pathname = {pathname}/>
+            ?   <React.Fragment> 
+                    <ToolBar pathname={pathname} handleToggleCategory = {this.handleToggleCategory} handleToggleWeb = {this.handleToggleWeb}/>
+                    <Table pathname = {pathname} chosenCategory = {chosenCategory} web = {web}/>
+                </React.Fragment>
             : null
         );
     }

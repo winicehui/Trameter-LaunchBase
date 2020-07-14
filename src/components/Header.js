@@ -17,6 +17,7 @@ class Header extends Component {
         this.state = {
             pathname: ''
         }
+        this.onClick = this.onClick.bind(this);
         this.toggleUser = this.toggleUser.bind(this);
     }
 
@@ -24,6 +25,12 @@ class Header extends Component {
         const pathname =  this.props.location.pathname.substring(1) || users_list[0]
         this.setState({ pathname: pathname })
     }
+    
+    onClick() {
+        this.props.history.push({
+            pathname: '/'
+        })
+    }    
 
     toggleUser = (user) => {
         this.props.history.push({
@@ -41,7 +48,7 @@ class Header extends Component {
         const { classes } = this.props;
         return (
             <div className = "Header">
-                <h1 className = "Title"> LaunchBase </h1>
+                <h1 className="Title" onClick={this.onClick}> LaunchBase </h1>
                 <Grid
                     container
                     alignItems='center'

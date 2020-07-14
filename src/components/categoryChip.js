@@ -96,6 +96,7 @@ class CategoryChip extends Component {
     }
 
     deleteCategory= (e) => {
+        alert("Deleting the category will delete all contents under this category for all users. Would you like to proceed?")
         const { index } = this.state
         this.props.handleDeleteCategory(index)
     }

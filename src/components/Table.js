@@ -1,9 +1,21 @@
 import React, { Component } from 'react'
+import { withStyles } from "@material-ui/core/styles";
 
-import { Container } from '@material-ui/core'
-import MaterialTable from 'material-table'
+import { TextField, Paper } from '@material-ui/core'
+import MaterialTable, { MTableEditField, MTableCell } from 'material-table'
 
 import firebase from '../firebase'
+
+const styles = {
+    textfield: {
+        color: '#707070',
+        fontSize: '13px',
+        borderBottomColor: '#353B51',
+        '& .MuiInput-underline:after': {
+            borderBottomColor: '#353B51',
+        }
+    }
+}
 
 class Table extends Component {
     constructor(props) {
@@ -52,94 +64,203 @@ class Table extends Component {
         }
     }
 
+    onKeyPress = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault(); // Let's stop this event.
+            e.stopPropagation()
+        }
+    }
+
     render() {
         const { isLoaded } = this.state
+        const { classes } = this.props
+        console.log(this.state.data)
         return (
             isLoaded 
-                ? <MaterialTable
-                    style = {{margin: '30px 70px 30px 70px'}}
+                ? <div style={{ margin: '30px 30px 30px 30px' }}>
+                <MaterialTable
                     columns={[
                         {   title: 'Channels', 
                             field: 'channel', 
                             width: "10%",
-                            sorting: false 
+                            sorting: false,
+                            editComponent: props => (
+                                <TextField
+                                    rowsMax={2}
+                                    value={props.value}
+                                    placeholder={'Channel'}
+                                    fullWidth
+                                    multiline
+                                    className={classes.textfield}
+                                    onChange={e => props.onChange(e.target.value)}
+                                    onKeyPress = {e => props.handleKeyPress}
+                                    inputProps={{ maxLength: 140 }}
+                                    autoFocus />
+                            )
                         },
                         {   title: 'Rating', 
                             field: 'rating', 
-                            type: 'numeric',
-                            width: '10%',
+                            // type: 'numeric',
+                            width: '7%',
                         },
                         {
                             title: 'Customer Description',
-                            field: 'description',
+                            field: 'customer_description',
                             width: '20%',
-                            sorting: false
+                            sorting: false,
+                            editComponent: props => (
+                                <TextField
+                                    fullWidth
+                                    multiline
+                                    rows={3}
+                                    rowsMax = {6}
+                                    value={props.value}
+                                    placeholder={'Customer Description'}
+                                    style={{ width: '100%' }}
+                                    className={classes.textfield}
+                                    onChange={e => props.onChange(e.target.value)}
+                                />
+                            )
                         },
                         {   title: 'Tech, Product, Market, Company', 
-                            field: 'details', 
+                            field: 'tpmc', 
                             width: "20%",
-                            sorting: false 
+                            sorting: false,
+                            editComponent: props => (
+                                <TextField
+                                    fullWidth
+                                    multiline
+                                    rows={3}
+                                    rowsMax={6}
+                                    value={props.value}
+                                    placeholder={'Tech, Product, Market, Company'}
+                                    style={{ width: '100%' }}
+                                    className={classes.textfield}
+                                    onChange={e => props.onChange(e.target.value)}
+                                />
+                            )
                         },
                         {   title: 'How to Leverage', 
                             field: 'leverage', 
-                            width: '25%',
-                            sorting: false 
+                            width: '20%',
+                            sorting: false,
+                            editComponent: props => (
+                                <TextField
+                                    fullWidth
+                                    multiline
+                                    rows={3}
+                                    rowsMax={6}
+                                    value={props.value}
+                                    placeholder={'Customer Description'}
+                                    style={{ width: '100%' }}
+                                    className={classes.textfield}
+                                    onChange={e => props.onChange(e.target.value)}
+                                />
+                            )
                         }, 
                         {   title: 'Sub/Link', 
                             field: 'link', 
-                            width: '15%',
-                            sorting: false 
+                            width: '10%',
+                            sorting: false
+                        }, 
+                        {
+                            title: 'Categories',
+                            field: 'categories',
+                            width: '13%', 
+                            sorting: false
                         }
                     ]}
-                    data={[{ channel: 'StackOverflow', rating: 3, details: 'FAANG', leverage: 'leverage', link: 'StackOverflow.com' }]}
+                    data={[{ channel: 'StackOverflow', description: 'description', rating: 3, details: 'FAANG', leverage: 'leverage', link: 'StackOverflow.com' }]}
+                    // data={Array.from(this.state.data)}
+                    // data = {this.state.data}
                     title="Channels"
 
-                    options={{
-                        headerStyle: { backgroundColor: '#707070', color: '#FFFFFF', fontSize: '16px', padding:'15px', wordBreak: 'break-word', }, 
-                        cellStyle: { wordBreak: 'break-word', color: '#707070', fontSize: '14px', hyphens: 'auto',  padding: '15px' },
+                    options={{  
+                        headerStyle: {  backgroundColor: '#707070', 
+                                        color: '#FFFFFF', 
+                                        fontSize: '16px', 
+                                        padding:'10px', 
+                                        wordBreak: 'break-word', 
+                                        border: '1px solid black', 
+                                        textAlign: 'center' }, 
+                        rowStyle: { fontSize: '14px' },
+                        actionsCellStyle: { border: '1px solid black', padding: '1px', margin: '0px' },
                         showTitle: false, 
                         draggable: false, 
-                        toolbar: false,
-                        tableLayout: 'fixed'
+                        // toolbar: false,
+                        tableLayout: 'fixed',
+                        search: false,
+                        emptyRowsWhenPaging: false,
+                        loadingType: 'linear'
+                    }}
+
+                    localization= {{
+                        header: {
+                            actions: 'Actions'
+                        },
+                    }}
+
+                    components={{
+                        Container: props => <Paper {...props} elevation={0} style = {{borderBottom:'none'}}/>,
+                        // Body: props => < MTableBody {...props} style={{ border: '1px #707070 solid' }} />,
+                        Cell: props => < MTableCell {...props} style={{ border: '1px solid black', 
+                                                                        padding: '10px', 
+                                                                        textAlign: 'center', 
+                                                                        wordBreak: 'break-word', 
+                                                                        color: '#707070',
+                                                                        hyphens: 'auto',
+                                                                     }}/>, 
+                        EditField: props => < MTableEditField {... props} style = {{width: '100%'}}/>
                     }}
 
                     editable={{
-                        // onRowAdd: newData =>
-                        //     new Promise((resolve, reject) => {
-                        //         setTimeout(() => {
-                        //             setData([...data, newData]);
+                        onRowAdd: newData =>
+                            new Promise((resolve, reject) => {
+                                // setTimeout(() => {
+                                //     const data = this.state.data
+                                //     data.push(newData);
+                                //     console.log(data)
+                                //     this.setState({data: data},
 
-                        //             resolve();
-                        //         }, 1000)
-                        //     }),
-                        // onRowUpdate: (newData, oldData) =>
-                        //     new Promise((resolve, reject) => {
-                        //         setTimeout(() => {
-                        //             const dataUpdate = [...data];
-                        //             const index = oldData.tableData.id;
-                        //             dataUpdate[index] = newData;
-                        //             setData([...dataUpdate]);
+                                //     resolve());
+                                // }, 1000)
+                                setTimeout(() => {
+                                    const { web, pathname } = this.state
+                                    const channelsRef = firebase.database().ref('channels')
+                                    var channelsKey = channelsRef.push(newData).key;
 
-                        //             resolve();
-                        //         }, 1000)
-                        //     }),
-                        // onRowDelete: oldData =>
-                        //     new Promise((resolve, reject) => {
-                        //         setTimeout(() => {
-                        //             const dataDelete = [...data];
-                        //             const index = oldData.tableData.id;
-                        //             dataDelete.splice(index, 1);
-                        //             setData([...dataDelete]);
+                                    firebase.database().ref('/' + web + '/' + pathname + '/' + channelsKey).set(true)
 
-                        //             resolve()
-                        //         }, 1000)
-                        //     }),
+                                    resolve();
+                                }, 1000);
+                            }),
+                        onRowUpdate: (newData, oldData) =>
+                            new Promise((resolve, reject) => {
+                                setTimeout(() => {
+                                    const data = this.state.data
+                                    data.push(newData);
+                                    console.log(data)
+                                    const index = oldData.tableData.id
+                                    resolve();
+                                }, 1000)
+                            }),
+                        onRowDelete: oldData =>
+                            new Promise((resolve, reject) => {
+                                setTimeout(() => {
+                                    const data = this.state.data
+                                    data.push(oldData);
+                                    console.log(data)
+
+                                    resolve()
+                                }, 1000)
+                            }),
                     }}
                 />
+                </div>
                 : null
         )
         
     }
 }
 
-export default Table;
+export default withStyles(styles)(Table);

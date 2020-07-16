@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { withStyles } from "@material-ui/core/styles";
 
-import { Grid, Select, MenuItem, Popover, TextField, Container } from '@material-ui/core';
+import { Grid, Select, MenuItem, Popover, TextField, Fade } from '@material-ui/core';
 import { DragDropContext, Droppable } from 'react-beautiful-dnd';
 import AddIcon from '@material-ui/icons/Add';
 import EditIcon from '@material-ui/icons/Edit';
@@ -227,7 +227,6 @@ class ToolBar extends Component {
 
         const id = openAdd ? 'simple-popover' : undefined;
         return (
-            isLoaded ? 
             <DragDropContext onDragEnd={this.onDragEnd}>
                 <Grid
                     container
@@ -265,7 +264,7 @@ class ToolBar extends Component {
                             lg = {10}
                             className = {classes.MiddleToolbox}
                             >
-                    
+                            {/* <Fade in={isLoaded}>  */}
                                 <Droppable droppableId = "categories" direction = "horizontal">
                                         {(provided, snapshot) => (
                                             <div
@@ -296,7 +295,9 @@ class ToolBar extends Component {
                                             </div>
                                         )}
                                     </Droppable>   
+                                {/* </Fade> */}
                             </Grid>
+                            
 
                             <Grid item 
                                 xs = {12}
@@ -358,7 +359,6 @@ class ToolBar extends Component {
                             /> }
                 </Grid>
             </DragDropContext>
-            : null
         );
     }
 }

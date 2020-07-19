@@ -8,7 +8,9 @@ const styles = {
             backgroundColor: "#FFFFFF"
         },
         "&:hover": {
-            color: '#2B2B2B'
+            color: '#2B2B2B', 
+            backgroundColor: '#F2F3F4',
+            borderRadius: '10px',
         }, 
     },
     Icon: {

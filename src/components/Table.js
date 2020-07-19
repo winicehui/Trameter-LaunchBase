@@ -2,26 +2,49 @@ import React, { Component } from 'react'
 import { withStyles } from "@material-ui/core/styles";
 
 import { TextField, Paper } from '@material-ui/core'
-import MaterialTable, { MTableEditField, MTableCell } from 'material-table'
+import tableIcons from '../styles/tableIcons'
+import MaterialTable, { MTableActions, MTableCell, MTableBodyRow, MTableBody, MTableEditRow, MTableToolbar } from 'material-table'
+import MyAction from './MyAction'
 
 import firebase from '../firebase'
 
 const styles = {
     textfield: {
         color: '#707070',
-        fontSize: '13px',
-        borderBottomColor: '#353B51',
-        '& .MuiInput-underline:after': {
-            borderBottomColor: '#353B51',
+        padding: '10px'
+    }, 
+    tableRow: {
+        color: '#707070',
+        "& td": {
+            border: "1px solid black !important",
+            padding: '1px',
+            margin: '0px'
         }
-    }
+    }, 
+    toolBar: { 
+        padding: '0px', 
+        margin: '0px',
+
+    }, 
+    Icon: {
+        color: '#707070',
+        "&:hover": {
+            color: '#2B2B2B'
+        },
+        "&:focus": {
+            color: '#2B2B2B'
+        },
+        "&:active": {
+            color: '#2B2B2B'
+        }
+    },
 }
 
 class Table extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            pathname: '',
+            pathname: '',   
             chosenCategory: '', 
             web: 'Online',
 
@@ -48,7 +71,9 @@ class Table extends Component {
     }
 
     static getDerivedStateFromProps(nextProps, prevState) {
-        return (nextProps.pathname !== prevState.pathname || nextProps.chosenCategory !== prevState.chosenCategory || nextProps.web !== prevState.web)
+        return (nextProps.pathname !== prevState.pathname || 
+            nextProps.chosenCategory !== prevState.chosenCategory || 
+            nextProps.web !== prevState.web)
             ? {
                 pathname: nextProps.pathname, 
                 chosenCategory: nextProps.chosenCategory,
@@ -66,6 +91,7 @@ class Table extends Component {
 
     onKeyPress = (e) => {
         if (e.key === 'Enter') {
+            console.log("enter")
             e.preventDefault(); // Let's stop this event.
             e.stopPropagation()
         }
@@ -74,11 +100,12 @@ class Table extends Component {
     render() {
         const { isLoaded } = this.state
         const { classes } = this.props
-        console.log(this.state.data)
         return (
             isLoaded 
-                ? <div style={{ margin: '30px 30px 30px 30px' }}>
+                ? 
                 <MaterialTable
+                    icons = {tableIcons}
+                    style={{ margin: '30px' }}
                     columns={[
                         {   title: 'Channels', 
                             field: 'channel', 
@@ -86,22 +113,31 @@ class Table extends Component {
                             sorting: false,
                             editComponent: props => (
                                 <TextField
-                                    rowsMax={2}
                                     value={props.value}
                                     placeholder={'Channel'}
-                                    fullWidth
-                                    multiline
-                                    className={classes.textfield}
                                     onChange={e => props.onChange(e.target.value)}
-                                    onKeyPress = {e => props.handleKeyPress}
-                                    inputProps={{ maxLength: 140 }}
-                                    autoFocus />
-                            )
+                                    rows = {1}
+                                    fullWidth
+                                    InputProps={{ disableUnderline: true, className: classes.textfield }}
+                                    autoFocus
+                                />
+                            ),
                         },
                         {   title: 'Rating', 
                             field: 'rating', 
-                            // type: 'numeric',
                             width: '7%',
+                            editComponent: props => (
+                                <TextField
+                                   value={props.value}
+                                    placeholder={'Rating'} 
+                                    onChange={e => props.onChange(e.target.value)}
+                                    rows={3}
+                                    rowsMax={6}
+                                    fullWidth
+                                    multiline
+                                    InputProps={{ disableUnderline: true, className: classes.textfield }}
+                                />
+                            ),
                         },
                         {
                             title: 'Customer Description',
@@ -110,33 +146,31 @@ class Table extends Component {
                             sorting: false,
                             editComponent: props => (
                                 <TextField
-                                    fullWidth
-                                    multiline
-                                    rows={3}
-                                    rowsMax = {6}
                                     value={props.value}
                                     placeholder={'Customer Description'}
-                                    style={{ width: '100%' }}
-                                    className={classes.textfield}
                                     onChange={e => props.onChange(e.target.value)}
+                                    rows={3}
+                                    rowsMax={6}
+                                    fullWidth
+                                    multiline
+                                    InputProps={{ disableUnderline: true, className: classes.textfield }}
                                 />
                             )
                         },
                         {   title: 'Tech, Product, Market, Company', 
-                            field: 'tpmc', 
+                            field: 'TPMC', 
                             width: "20%",
                             sorting: false,
                             editComponent: props => (
                                 <TextField
-                                    fullWidth
-                                    multiline
-                                    rows={3}
-                                    rowsMax={6}
                                     value={props.value}
                                     placeholder={'Tech, Product, Market, Company'}
-                                    style={{ width: '100%' }}
-                                    className={classes.textfield}
                                     onChange={e => props.onChange(e.target.value)}
+                                    rows={3}
+                                    rowsMax={6}
+                                    fullWidth
+                                    multiline
+                                    InputProps={{ disableUnderline: true, className: classes.textfield }}                               
                                 />
                             )
                         },
@@ -146,34 +180,57 @@ class Table extends Component {
                             sorting: false,
                             editComponent: props => (
                                 <TextField
-                                    fullWidth
-                                    multiline
-                                    rows={3}
-                                    rowsMax={6}
                                     value={props.value}
                                     placeholder={'Customer Description'}
-                                    style={{ width: '100%' }}
-                                    className={classes.textfield}
                                     onChange={e => props.onChange(e.target.value)}
+                                    rows={3}
+                                    rowsMax={6}
+                                    fullWidth
+                                    multiline
+                                    InputProps={{ disableUnderline: true, className: classes.textfield }}
                                 />
                             )
                         }, 
                         {   title: 'Sub/Link', 
                             field: 'link', 
                             width: '10%',
-                            sorting: false
+                            sorting: false,
+                            editComponent: props => (
+                                <TextField
+                                    value={props.value}
+                                    placeholder={'Sub/Link'}
+                                    onChange={e => props.onChange(e.target.value)}
+                                    rows={3}
+                                    rowsMax={6}
+                                    fullWidth
+                                    multiline
+                                    InputProps={{ disableUnderline: true, className: classes.textfield }}
+                                />
+                            ),                            
                         }, 
                         {
                             title: 'Categories',
                             field: 'categories',
                             width: '13%', 
-                            sorting: false
-                        }
+                            sorting: false,
+                            editComponent: props => (
+                                <TextField
+                                    value={props.value}
+                                    placeholder={'Categories'}
+                                    onChange={e => props.onChange(e.target.value)}
+                                    rows={3}
+                                    rowsMax={6}
+                                    fullWidth
+                                    multiline
+                                    InputProps={{ disableUnderline: true, className: classes.textfield }}
+                                />
+                            ),
+                        },
                     ]}
-                    data={[{ channel: 'StackOverflow', description: 'description', rating: 3, details: 'FAANG', leverage: 'leverage', link: 'StackOverflow.com' }]}
+                    data={[{ channel: 'StackOverflow', customer_description: 'description', rating: 3, TPMC: 'FAANG', leverage: 'leverage', link: 'StackOverflow.com' },
+                        { channel: 'StackOverflow', customer_description: 'description', rating: 3, TPMC: 'FAANG', leverage: 'leverage', link: 'StackOverflow.com' }]}
                     // data={Array.from(this.state.data)}
                     // data = {this.state.data}
-                    title="Channels"
 
                     options={{  
                         headerStyle: {  backgroundColor: '#707070', 
@@ -183,34 +240,43 @@ class Table extends Component {
                                         wordBreak: 'break-word', 
                                         border: '1px solid black', 
                                         textAlign: 'center' }, 
-                        rowStyle: { fontSize: '14px' },
-                        actionsCellStyle: { border: '1px solid black', padding: '1px', margin: '0px' },
+                        actionsCellStyle: { padding: '1px', margin: '0px' },
                         showTitle: false, 
                         draggable: false, 
                         // toolbar: false,
                         tableLayout: 'fixed',
                         search: false,
                         emptyRowsWhenPaging: false,
-                        loadingType: 'linear'
+                        loadingType: 'linear', 
+                        toolbarButtonAlignment: 'left'
                     }}
 
                     localization= {{
-                        header: {
-                            actions: 'Actions'
-                        },
+                        body: {
+                            addTooltip: '', 
+                            deleteTooltip: '',
+                            editTooltip: ''
+                        }
                     }}
 
                     components={{
-                        Container: props => <Paper {...props} elevation={0} style = {{borderBottom:'none'}}/>,
-                        // Body: props => < MTableBody {...props} style={{ border: '1px #707070 solid' }} />,
-                        Cell: props => < MTableCell {...props} style={{ border: '1px solid black', 
-                                                                        padding: '10px', 
+                        Container: props => <Paper {...props} elevation={0} />,
+                        Cell: props => < MTableCell {...props} style={{ margin: '0px',
+                                                                        padding: '10px',
                                                                         textAlign: 'center', 
                                                                         wordBreak: 'break-word', 
-                                                                        color: '#707070',
                                                                         hyphens: 'auto',
-                                                                     }}/>, 
-                        EditField: props => < MTableEditField {... props} style = {{width: '100%'}}/>
+                                                                     }} />, 
+                        EditRow: props => (
+                            <MTableEditRow {...props} className={classes.tableRow} />
+                        ),
+                        Row: props => (
+                            <MTableBodyRow {...props} className={classes.tableRow} />
+                        ), 
+                        Action: props => <MyAction {...props} style = {{width: '50%'}}/>, 
+                        Toolbar: props => (
+                            <MTableToolbar {...props} classes={{root: classes.toolBar}}/>
+                        )
                     }}
 
                     editable={{
@@ -256,7 +322,6 @@ class Table extends Component {
                             }),
                     }}
                 />
-                </div>
                 : null
         )
         

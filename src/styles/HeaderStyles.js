@@ -12,7 +12,9 @@ const styles = {
             backgroundColor: '#F2F3F4',
         },
         '&:hover': {
-            border: '1.5px solid #F2F3F4'
+            // border: '1.5px solid #F2F3F4'
+            backgroundColor: '#F2F3F4',
+            color: '#353B51'
         },
     },
     // User Button (selected)
@@ -28,7 +30,9 @@ const styles = {
             backgroundColor: '#F2F3F4',
         },
         '&:hover': {
-            border: '1.5px solid #FFFFFF'
+            // border: '1.5px solid #FFFFFF'
+            backgroundColor: '#F2F3F4',
+            color: '#353B51'
         },
     },
 }

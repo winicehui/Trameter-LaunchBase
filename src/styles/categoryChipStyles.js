@@ -27,7 +27,7 @@ const styles = {
         color: '#707070',
         "&:hover": {
             color: '#2B2B2B',
-            backgroundColor: '#FFFFFF'
+            backgroundColor: '#F2F3F4'
         }
     }
 }

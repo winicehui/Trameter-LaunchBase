@@ -7,6 +7,7 @@ const styles = {
             borderBottomColor: '#353B51',
         }
     },
+    // Selected Button
     selectedButton: {
         backgroundColor: '#707070',
         color: '#FFFFFF',
@@ -15,6 +16,7 @@ const styles = {
             color: '#FFFFFF',
         }
     },
+    // Dragging Button
     isDraggingButton: {
         backgroundColor: '#D6DADD',
         color: '#707070',
@@ -22,6 +24,7 @@ const styles = {
             color: '#2B2B2B'
         }
     },
+    // Regular Button
     Button: {
         backgroundColor: '#FFFFFF',
         color: '#707070',

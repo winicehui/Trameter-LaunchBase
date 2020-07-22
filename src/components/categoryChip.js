@@ -28,7 +28,7 @@ class CategoryChip extends Component {
     }
 
     componentDidMount(){
-        const { category, edit, chosenCategory, index } = this.props
+        const { index, category, chosenCategory, edit } = this.props
         this.setState({
             index: index,
             category: category, 
@@ -102,7 +102,7 @@ class CategoryChip extends Component {
     }
 
     render() {
-        const { category, edit, chosenCategory, index, isLoaded, textEdit } = this.state
+        const { index, category, chosenCategory, edit, textEdit, isLoaded  } = this.state
         const { classes } = this.props
         const width = (category.length + 1) * 8 + 'px'
         return (
@@ -129,20 +129,21 @@ class CategoryChip extends Component {
                                         cursor: 'pointer',
                                         fontWeight: !snapshot.isDragging ? 'normal' : '500', 
                                     }}
-                                    {...provided.dragHandleProps}
                                     onClick={!edit ? (e) => { this.toggleCategory(e, category) } : this.toggleTextEdit}
                                     onDelete={!edit ? undefined : this.deleteCategory}
+                                    {...provided.dragHandleProps}
                                 />
                                 : <TextField
                                     value={category}
+                                    onChange={this.handleTextChange}
+                                    onKeyPress= {this.onKeyPress}
                                     autoFocus
                                     rowsMax={1}
                                     className ={classes.textfield}
                                     style = {{ width: width }}
                                     inputProps={{ maxLength: 140 }}
                                     {...provided.dragHandleProps}
-                                    onChange={this.handleTextChange}
-                                    onKeyPress= {this.onKeyPress}
+                                    
                                 />
                             }
                         </div>

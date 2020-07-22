@@ -1,14 +1,16 @@
 import React, { Component } from 'react';
 import { withStyles } from "@material-ui/core/styles";
+import { withRouter } from "react-router";
 
 import { Grid, Select, MenuItem, Popover, TextField, Fade } from '@material-ui/core';
 import { DragDropContext, Droppable } from 'react-beautiful-dnd';
-import AddIcon from '@material-ui/icons/Add';
-import EditIcon from '@material-ui/icons/Edit';
-import DoneIcon from '@material-ui/icons/Done';
+import AddIcon from '@material-ui/icons/Add'
+import EditIcon from '@material-ui/icons/Edit'
+import DoneIcon from '@material-ui/icons/Done'
 
 import CategoryChip from './categoryChip'
-import users_lists from '../static/Usertypes'
+
+import users_list from '../static/Usertypes'
 
 import firebase from '../firebase'
 
@@ -18,19 +20,19 @@ class ToolBar extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            web: 'Online', 
-            pathname: '',
+            web: 'Online',  // 'Online' or 'Offline'
+            pathname: 'Enthusiasts', // indicates User
 
-            categories: [], 
-            chosenCategory: '', 
+            categories: [], // list oc categories for specified User
+            chosenCategory: '', // chosen category
 
-            edit: false,
+            edit: false, // T/F condiition for editing/deleting categories in toolbar
 
-            anchorE1: null, 
-            openAdd: false, 
-            newCategory: '',
+            anchorE1: null, // anchor for Popover
+            openAdd: false, // T/F condition for opening Add Category Popover
+            newCategory: '', // controlled text for Add Category text
 
-            isLoaded: false
+            isLoaded: false // T/F condition for data Loaded
         }
         this.toggleOnOff = this.toggleOnOff.bind(this);
         this.toggleEdit = this.toggleEdit.bind(this);
@@ -51,15 +53,15 @@ class ToolBar extends Component {
         const orderRef = firebase.database().ref('/order/' + pathname)
         orderRef.on('value', (snapshot) => {
             const { chosenCategory, web } = this.state 
-            let categories = snapshot.val();
+            let categories = snapshot.val() || [];
             const newChosenCategory = !chosenCategory ? (categories ? categories[0] : '') : chosenCategory
             this.setState({                 
-                categories: categories || [],
+                categories: categories,
                 chosenCategory: newChosenCategory,
                 isLoaded: true,                 
             })
-            this.props.handleToggleCategory(newChosenCategory)
-            this.props.handleToggleWeb(web)
+            this.props.handleToggleCategory(newChosenCategory) // send back to parent component 
+            this.props.handleToggleWeb(web) // send back to parent component (typically 'Online')
         })
     }
 
@@ -68,10 +70,13 @@ class ToolBar extends Component {
     }
 
     static getDerivedStateFromProps(nextProps, prevState) {
-        return (nextProps.pathname !== prevState.pathname)
+        const newPathname = nextProps.location.pathname.substring(1) || users_list[0]
+        // change state when pathname(user) changes
+        return (newPathname.toLowerCase() !== prevState.pathname.toLowerCase())
             ? { web: 'Online',
-                pathname: nextProps.pathname,
-
+                pathname: newPathname,
+                
+                categories: [],
                 chosenCategory: '',
 
                 edit: false,
@@ -93,13 +98,9 @@ class ToolBar extends Component {
 
     toggleOnOff = (e) => {
         const { web } = this.state 
-        if (web === 'Online'){
-            this.setState ({ web: 'Offline' })
-            this.props.handleToggleWeb('Offline')
-        } else {
-            this.setState({ web: 'Online' })
-            this.props.handleToggleWeb('Online')
-        }
+        const newWeb = (web === 'Online') ? 'Offline' : 'Online'
+        this.setState({ web: newWeb })
+        this.props.handleToggleWeb(newWeb)
     }
 
     toggleEdit = (e) => {
@@ -115,7 +116,7 @@ class ToolBar extends Component {
     handleCategoryChange = (newCategoryName, index) => {
         const { categories, chosenCategory } = this.state
         if (categories[index] === chosenCategory) {
-            this.setState({ chosenCategory: newCategoryName }, users_lists.forEach(user => {
+            this.setState({ chosenCategory: newCategoryName }, users_list.forEach(user => {
                 const orderRef = firebase.database().ref('/order/' + user)
                 orderRef.once('value', snapshot => {
                     const user_categories = snapshot.val() || []
@@ -127,7 +128,7 @@ class ToolBar extends Component {
             }))
             this.props.handleToggleCategory(newCategoryName)
         } else { 
-            users_lists.forEach(user => {
+            users_list.forEach(user => {
                 const orderRef = firebase.database().ref('/order/' + user)
                 orderRef.once('value', snapshot => {
                     const user_categories = snapshot.val() || []
@@ -144,7 +145,7 @@ class ToolBar extends Component {
         const { categories, chosenCategory } = this.state
         const deletedCategory = categories[index]
         if (categories[index] === chosenCategory) {
-            this.setState({ chosenCategory: categories[(index+1)] }, users_lists.forEach(user => {
+            this.setState({ chosenCategory: categories[(index+1)] }, users_list.forEach(user => {
                 const orderRef = firebase.database().ref('/order/' + user)
                 orderRef.once('value', snapshot => {
                     const user_categories = snapshot.val() || []
@@ -156,7 +157,7 @@ class ToolBar extends Component {
             }))
             this.props.handleToggleCategory(categories[(index+1)])
         } else {
-            users_lists.forEach(user => {
+            users_list.forEach(user => {
                 const orderRef = firebase.database().ref('/order/' + user)
                 orderRef.once('value', snapshot => {
                     const user_categories = snapshot.val() || []
@@ -181,25 +182,45 @@ class ToolBar extends Component {
         this.setState({ newCategory: add })
     }
 
-    onKeyPress = (e) => {
+    onKeyPress = async (e) => {
         if (e.key === 'Enter') {
-            const { newCategory, openAdd } = this.state
+            const { newCategory, openAdd, categories } = this.state
             if (newCategory.length === 0) {
-                this.setState({ anchorE1: null, openAdd: !openAdd, newCategory: '' })
-            } else {
                 this.setState({ 
-                    anchorE1: null, openAdd: !openAdd, 
-                    newCategory: '', chosenCategory: newCategory},
-                    users_lists.forEach(user => {
-                        const orderRef = firebase.database().ref('/order/' + user)
-                        orderRef.once('value', snapshot => {
-                            const user_categories = snapshot.val() || []
-                            const newCategories = Array.from(user_categories)
-                            newCategories.push(newCategory)
-                            firebase.database().ref('/order/' + user).set(newCategories)
-                        })
-                    })
-                )
+                    anchorE1: null, 
+                    openAdd: !openAdd, 
+                    newCategory: '' 
+                })
+            } else {
+                // this.setState({ 
+                //     anchorE1: null, 
+                //     openAdd: !openAdd, 
+                //     newCategory: '', 
+                //     chosenCategory: newCategory},
+                //     users_list.forEach(user => {
+                //         const orderRef = firebase.database().ref('/order/' + user)
+                //         orderRef.once('value', snapshot => {
+                //             const user_categories = snapshot.val() || []
+                //             const newCategories = Array.from(user_categories)
+                //             newCategories.push(newCategory)
+                //             firebase.database().ref('/order/' + user).set(newCategories)
+                //         })
+                //     })
+                // )
+                let addCategoryPromises = []
+                let newOrder = {}
+                newOrder[categories.length] = newCategory
+
+                users_list.forEach(user => {
+                    addCategoryPromises.push(firebase.database().ref('/order/'+user).push(newOrder))
+                })
+                await Promise.all(addCategoryPromises)
+                this.setState({
+                    anchorE1: null,
+                    openAdd: !openAdd,
+                    newCategory: '',
+                    chosenCategory: newCategory
+                })
                 this.props.handleToggleCategory(newCategory)
             }
         }
@@ -257,47 +278,48 @@ class ToolBar extends Component {
 
                     {web === "Online"
                         ? <React.Fragment>
-                        <Grid item 
-                            xs = {12}
-                            sm = {8}
-                            md = {8}
-                            lg = {10}
-                            className = {classes.MiddleToolbox}
-                            >
-                            {/* <Fade in={isLoaded}>  */}
-                                <Droppable droppableId = "categories" direction = "horizontal">
-                                        {(provided, snapshot) => (
-                                            <div
-                                                style={{ 
-                                                    display: 'flex', 
-                                                    overflowX: 'scroll', 
-                                                    // flexWrap: edit ? 'wrap': 'nowrap', 
-                                                    backgroundColor: !snapshot.isDraggingOver && !edit ? '#FFFFFF' : '#F2F3F4'
-                                                }}
-                                                ref = {provided.innerRef}
-                                                {...provided.droppableProps}
-                                            >
-                                                {categories.map((element, i) =>
-                                                    (
-                                                        <CategoryChip 
-                                                            key = {element} 
-                                                            index = {i} 
-                                                            category = {element} 
-                                                            chosenCategory = {chosenCategory}
-                                                            edit = {edit} 
-                                                            handleToggleCategory = {this.handleToggleCategory}
-                                                            handleCategoryChange = {this.handleCategoryChange}
-                                                            handleDeleteCategory = {this.handleDeleteCategory}
-                                                        /> 
-                                                    )
-                                                )}
-                                                {provided.placeholder}
-                                            </div>
-                                        )}
-                                    </Droppable>   
-                                {/* </Fade> */}
+                            <Grid item 
+                                xs = {12}
+                                sm = {8}
+                                md = {8}
+                                lg = {10}
+                                className = {classes.MiddleToolbox}
+                                >
+                                
+                                {isLoaded ? 
+                                    <Droppable droppableId = "categories" direction = "horizontal">
+                                            {(provided, snapshot) => (
+                                                <div
+                                                    style={{ 
+                                                        display: 'flex', 
+                                                        overflowX: 'scroll', 
+                                                        // flexWrap: edit ? 'wrap': 'nowrap', 
+                                                        backgroundColor: !snapshot.isDraggingOver && !edit ? '#FFFFFF' : '#F2F3F4'
+                                                    }}
+                                                    ref = {provided.innerRef}
+                                                    {...provided.droppableProps}
+                                                >
+                                                    {categories.map((element, i) =>
+                                                        (
+                                                            <CategoryChip 
+                                                                key = {element} 
+                                                                index = {i} 
+                                                                category = {element} 
+                                                                chosenCategory = {chosenCategory}
+                                                                edit = {edit} 
+                                                                handleToggleCategory = {this.handleToggleCategory}
+                                                                handleCategoryChange = {this.handleCategoryChange}
+                                                                handleDeleteCategory = {this.handleDeleteCategory}
+                                                            /> 
+                                                        )
+                                                    )}
+                                                    {provided.placeholder}
+                                                </div>
+                                            )}
+                                        </Droppable>   
+                                    : null 
+                                }
                             </Grid>
-                            
 
                             <Grid item 
                                 xs = {12}
@@ -339,28 +361,27 @@ class ToolBar extends Component {
                                     onClose= {this.togglePopper}
                                 >
                                     <TextField
-                                        rowsMax={1}
                                         value = {newCategory}
                                         placeholder = "New Category"
-                                        style={{ padding: '8px', minWidth: '50px' }}
-                                        className={classes.textfield}
                                         onChange={this.handleAddTextChange}
                                         onKeyPress={this.onKeyPress}
+                                        rowsMax={1}
+                                        className={classes.textfield}
                                         inputProps={{ maxLength: 140 }}
                                         autoFocus />
                                 </Popover>
                             </Grid>
                         </React.Fragment>
-                            : <Grid item
-                                xs={12}
-                                sm={10}
-                                md={10}
-                                lg={11}
-                            /> }
+                    : <Grid item
+                        xs={12}
+                        sm={10}
+                        md={10}
+                        lg={11}
+                    /> }
                 </Grid>
             </DragDropContext>
         );
-    }
-}
+    };
+};
 
-export default withStyles(styles)(ToolBar);
+export default withRouter(withStyles(styles)(ToolBar));

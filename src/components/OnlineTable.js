@@ -1,12 +1,17 @@
 import React, { Component } from 'react'
 import { withStyles } from "@material-ui/core/styles";
+import { withRouter } from "react-router";
 
-import { TextField, Paper } from '@material-ui/core'
+import { TextField, Paper, Select, MenuItem } from '@material-ui/core'
+import Autocomplete from '@material-ui/lab/Autocomplete';
 import tableIcons from '../styles/tableIcons'
 import MaterialTable, { MTableActions, MTableCell, MTableBodyRow, MTableBody, MTableEditRow, MTableToolbar } from 'material-table'
 import MyAction from './MyAction'
 
+import users_list from '../static/Usertypes'
+
 import firebase from '../firebase'
+
 
 const styles = {
     textfield: {
@@ -38,32 +43,102 @@ const styles = {
             color: '#2B2B2B'
         }
     },
+    select: {
+        textAlign: 'center',
+        color: '#707070',
+        "&:focus": {
+            backgroundColor: "#FFFFFF"
+        },
+        "&:hover": {
+            color: '#2B2B2B',
+        },
+    },
 }
 
-class Table extends Component {
+class OnlineTable extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            pathname: '',   
+            pathname: 'Enthusiasts',   
             chosenCategory: '', 
             web: 'Online',
+            categories: [],
 
             data:[],
             isLoaded: false,
         }
+        // this.getChannelPromise = this.getChannelPromise.bind(this)
     }
 
-    update = () => {
-        const { pathname, chosenCategory, web } = this.state
-        // const orderRef = firebase.database().ref('/' + web + )
-        // orderRef.on('value', (snapshot) => {
-        //     const { chosenCategory } = this.state
+    // getChannelPromise (id) {
+    //     return firebase.database().ref('/channels/' + id).once('value', async (snapshot) => {
+    //         console.log(snapshot.val())
+    //         return snapshot.val()
+    //     })
+    // }
+
+    update() {
+        // const { pathname } = this.state 
+        // const catRef = firebase.database().ref('/order/' + pathname)
+        // catRef.on('value', (snapshot) => {
         //     let categories = snapshot.val();
-            this.setState({
-                // chosenCategory: !chosenCategory ? (categories ? categories[0] : '') : chosenCategory,
-                isLoaded: true,
-            })
+        //     this.setState({
+        //         categories: categories || [],
+        //         isLoaded: true
+        //     })
         // })
+
+        // const { pathname, chosenCategory, web } = this.state
+        // firebase.database().ref('/'+ web +'/'+ pathname +'/'+ chosenCategory).on('value').then((snapshot) => {
+        //     const channelIds = snapshot.value()
+        //     let promises = []
+        //     channelIds.forEach((id) => {
+        //         promises.push(this.getChannelPromise(id))
+        //     })
+        //     return Promise.all(promises)
+        // }, (err) => {
+        //     console.log(err)
+        // }).then((channels) => {
+        //     this.setState({ data: channels, isLoaded: true})
+        // }, (err) => {
+        //     console.log(err)
+        // })
+
+
+        // const { pathname, chosenCategory, web } = this.props
+        // // let channelsRef = firebase.database().ref( web + '/' + pathname + '/' + chosenCategory + '/')
+        // let channelsRef = firebase.database().ref('Online/Enthusiasts/Social')
+        // channelsRef.on('value', async (snapshot) => {
+        //     let channelPromises = []
+        //     console.log(snapshot.val())
+        //     snapshot.forEach((channelSnapShot) => {
+        //         console.log(channelSnapShot.key)
+        //         channelPromises.push(firebase.database().ref('/channels/' + channelSnapShot.key).once('value', async (snapshot) => {
+        //             console.log(snapshot.val())
+        //             return snapshot.val()
+        //     }))
+        //     })
+        //     let channelSnapshots = await Promise.all(channelPromises)
+        //     channelSnapshots.forEach((a) => console.log (a.val()))
+        //     this.setState({ data: channelSnapshots, isLoaded: true})
+        // })
+
+        const { pathname, chosenCategory, web } = this.state
+        // let channelsRef = firebase.database().ref( web + '/' + pathname + '/' + chosenCategory + '/')
+        let channelsRef = firebase.database().ref('Online/Enthusiasts/Social')
+        channelsRef.on('value', async (snapshot) => {
+            var channels = []
+            let channelPromises = []
+            // console.log(snapshot.val())
+            snapshot.forEach((channelSnapShot) => {
+                channelPromises.push(firebase.database().ref('/channels/' + channelSnapShot.key).once('value'))
+            })
+            await Promise.all(channelPromises).then((snapshots) => {
+                snapshots.forEach((snapshot) => channels.push(snapshot.val()))
+            })
+            
+            this.setState({ data: channels, isLoaded: true })
+        })
     }
 
     componentDidMount() {
@@ -71,11 +146,12 @@ class Table extends Component {
     }
 
     static getDerivedStateFromProps(nextProps, prevState) {
-        return (nextProps.pathname !== prevState.pathname || 
+        const newPathname = nextProps.location.pathname.substring(1) || users_list[0]
+        return (newPathname.toLowerCase() !== prevState.pathname.toLowerCase() || 
             nextProps.chosenCategory !== prevState.chosenCategory || 
             nextProps.web !== prevState.web)
             ? {
-                pathname: nextProps.pathname, 
+                pathname: newPathname, 
                 chosenCategory: nextProps.chosenCategory,
                 web: nextProps.web,
                 isLoaded: false,
@@ -89,22 +165,23 @@ class Table extends Component {
         }
     }
 
-    onKeyPress = (e) => {
-        if (e.key === 'Enter') {
-            console.log("enter")
-            e.preventDefault(); // Let's stop this event.
-            e.stopPropagation()
-        }
-    }
+    // onKeyPress = (e) => {
+    //     if (e.key === 'Enter') {
+    //         console.log("enter")
+    //         e.preventDefault(); // Let's stop this event.
+    //         e.stopPropagation()
+    //     }
+    // }
 
     render() {
         const { isLoaded } = this.state
         const { classes } = this.props
+        console.log(this.state.data)
         return (
             isLoaded 
                 ? 
                 <MaterialTable
-                    icons = {tableIcons}
+                    // icons = {tableIcons}
                     style={{ margin: '30px' }}
                     columns={[
                         {   title: 'Channels', 
@@ -127,16 +204,22 @@ class Table extends Component {
                             field: 'rating', 
                             width: '7%',
                             editComponent: props => (
-                                <TextField
-                                   value={props.value}
-                                    placeholder={'Rating'} 
-                                    onChange={e => props.onChange(e.target.value)}
-                                    rows={3}
-                                    rowsMax={6}
+                                <Select
                                     fullWidth
-                                    multiline
-                                    InputProps={{ disableUnderline: true, className: classes.textfield }}
-                                />
+                                    disableUnderline
+                                    inputProps={{
+                                        classes: { select: classes.select }
+                                    }}
+                                    defaultValue = {1}
+                                    value={props.value}
+                                    onChange={e => props.onChange(e.target.value)}
+                                >
+                                    <MenuItem value={1}>1</MenuItem>
+                                    <MenuItem value={2}>2</MenuItem>
+                                    <MenuItem value={3}>3</MenuItem>
+                                    <MenuItem value={4}>4</MenuItem>
+                                    <MenuItem value={5}>5</MenuItem>
+                                </Select>
                             ),
                         },
                         {
@@ -214,23 +297,34 @@ class Table extends Component {
                             width: '13%', 
                             sorting: false,
                             editComponent: props => (
-                                <TextField
-                                    value={props.value}
-                                    placeholder={'Categories'}
-                                    onChange={e => props.onChange(e.target.value)}
-                                    rows={3}
-                                    rowsMax={6}
-                                    fullWidth
-                                    multiline
-                                    InputProps={{ disableUnderline: true, className: classes.textfield }}
+                                // <TextField
+                                //     value={props.value}
+                                //     placeholder={'Categories'}
+                                //     onChange={e => props.onChange(e.target.value)}
+                                //     rows={3}
+                                //     rowsMax={6}
+                                //     fullWidth
+                                //     multiline
+                                //     InputProps={{ disableUnderline: true, className: classes.textfield }}
+                                // />
+                                <Autocomplete
+                                    multiple
+                                    options={this.state.categories}
+                                    // getOptionLabel={(option) => option.title}
+                                    defaultValue={[]}
+                                    renderInput={(params) => (
+                                        <TextField
+                                            {...params}
+                                        />
+                                    )}
                                 />
                             ),
                         },
                     ]}
-                    data={[{ channel: 'StackOverflow', customer_description: 'description', rating: 3, TPMC: 'FAANG', leverage: 'leverage', link: 'StackOverflow.com' },
-                        { channel: 'StackOverflow', customer_description: 'description', rating: 3, TPMC: 'FAANG', leverage: 'leverage', link: 'StackOverflow.com' }]}
+                    // data={[{ channel: 'StackOverflow', customer_description: 'description', rating: 3, TPMC: 'FAANG', leverage: 'leverage', link: 'StackOverflow.com' },
+                    //     { channel: 'StackOverflow', customer_description: 'description', rating: 2, TPMC: 'FAANG', leverage: 'leverage', link: 'StackOverflow.com' }]}
                     // data={Array.from(this.state.data)}
-                    // data = {this.state.data}
+                    data = {this.state.data}
 
                     options={{  
                         headerStyle: {  backgroundColor: '#707070', 
@@ -273,7 +367,7 @@ class Table extends Component {
                         Row: props => (
                             <MTableBodyRow {...props} className={classes.tableRow} />
                         ), 
-                        Action: props => <MyAction {...props} style = {{width: '50%'}}/>, 
+                        Action: props => <MyAction {...props} />, 
                         Toolbar: props => (
                             <MTableToolbar {...props} classes={{root: classes.toolBar}}/>
                         )
@@ -291,11 +385,11 @@ class Table extends Component {
                                 //     resolve());
                                 // }, 1000)
                                 setTimeout(() => {
-                                    const { web, pathname } = this.state
+                                    const { web, pathname, chosenCategory } = this.state
                                     const channelsRef = firebase.database().ref('channels')
                                     var channelsKey = channelsRef.push(newData).key;
 
-                                    firebase.database().ref('/' + web + '/' + pathname + '/' + channelsKey).set(true)
+                                    firebase.database().ref('/' + web + '/' + pathname + '/' + chosenCategory + '/'+ channelsKey).set(true)
 
                                     resolve();
                                 }, 1000);
@@ -328,4 +422,4 @@ class Table extends Component {
     }
 }
 
-export default withStyles(styles)(Table);
+export default withRouter(withStyles(styles)(OnlineTable));

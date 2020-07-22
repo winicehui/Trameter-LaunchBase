@@ -13,6 +13,16 @@ const styles = {
             borderRadius: '10px',
         }, 
     },
+    // Add TextField
+    textfield: {
+        borderBottomColor: '#353B51',
+        padding: '8px',
+        minWidth: '50px',
+        '& .MuiInput-underline:after': {
+            borderBottomColor: '#353B51',
+        }
+    }, 
+    // Edit/Done/Add Icons
     Icon: {
         cursor: 'pointer',
         // height:'50px',
@@ -53,13 +63,6 @@ const styles = {
         // height: '50px',
         height: '65px'
     },   
-    // Add TextField
-    textfield: {
-        borderBottomColor: '#353B51',
-        '& .MuiInput-underline:after': {
-            borderBottomColor: '#353B51',
-        }
-    }, 
 }
 
 export default styles;

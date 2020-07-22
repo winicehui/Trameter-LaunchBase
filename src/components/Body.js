@@ -1,31 +1,16 @@
 import React, { Component } from 'react';
-import { withRouter } from "react-router";
 
 import ToolBar from './ToolBar'
-import Table from './Table'
+import OnlineTable from './OnlineTable'
 import users_list from '../static/Usertypes'
 
 class Body extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            pathname: '',
-            isLoaded: false, 
-
             chosenCategory: '',
-            web: 'Online'
+            web: 'Online', 
         }
-    }
-
-    componentDidMount() {
-        const pathname = this.props.location.pathname.substring(1) || users_list[0]
-        this.setState({ pathname: pathname, isLoaded: true })
-    }
-
-    static getDerivedStateFromProps(nextProps, prevState) {
-        return (nextProps.location.pathname.substring(1).toLowerCase() !== prevState.pathname.toLowerCase())
-            ? { pathname: nextProps.location.pathname.substring(1) || users_list[0] }
-            : null
     }
 
     handleToggleCategory = (category) => {
@@ -37,16 +22,23 @@ class Body extends Component {
     }
 
     render() {
-        const {pathname, isLoaded, chosenCategory, web} = this.state
+        const { chosenCategory, web} = this.state
         return (
-            isLoaded 
-            ?   <React.Fragment> 
-                    <ToolBar pathname={pathname} handleToggleCategory = {this.handleToggleCategory} handleToggleWeb = {this.handleToggleWeb}/>
-                    <Table pathname = {pathname} chosenCategory = {chosenCategory} web = {web}/>
-                </React.Fragment>
-            : null
+            <React.Fragment> 
+                    <ToolBar 
+                        handleToggleCategory = {this.handleToggleCategory} 
+                        handleToggleWeb = {this.handleToggleWeb}
+                    />
+                    { web === 'Online' 
+                        ? <OnlineTable
+                            chosenCategory={chosenCategory}
+                            web={web}
+                        />
+                        : null 
+                    }
+            </React.Fragment>
         );
     }
 }
 
-export default withRouter(Body);
+export default Body;

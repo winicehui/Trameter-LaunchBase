@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { withStyles } from "@material-ui/core/styles";
 import { withRouter } from "react-router";
 
-import { Grid, Select, MenuItem, Popover, TextField, Fade } from '@material-ui/core';
+import { Grid, Select, MenuItem, Popover, TextField } from '@material-ui/core';
 import { DragDropContext, Droppable } from 'react-beautiful-dnd';
 import AddIcon from '@material-ui/icons/Add'
 import EditIcon from '@material-ui/icons/Edit'

@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 
 import ToolBar from './ToolBar'
 import OnlineTable from './OnlineTable'
-import users_list from '../static/Usertypes'
 
 class Body extends Component {
     constructor(props) {
@@ -23,7 +22,6 @@ class Body extends Component {
 
     render() {
         const { chosenCategoryId, web} = this.state
-        console.log(chosenCategoryId)
         return (
             <React.Fragment> 
                     <ToolBar 
@@ -34,9 +32,8 @@ class Body extends Component {
                         ? null 
                         : web === 'Online' 
                             ? <OnlineTable
-                                chosenCategoryId={chosenCategoryId}
-                                web={web}
-                            />
+                                    chosenCategoryId={chosenCategoryId}
+                                />
                             : null 
                     }
             </React.Fragment>

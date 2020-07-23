@@ -2,34 +2,46 @@ import React, { Component } from 'react'
 import { withStyles } from "@material-ui/core/styles";
 import { withRouter } from "react-router";
 
-import { TextField, Paper, Select, MenuItem } from '@material-ui/core'
+import { TextField, Paper, Select, MenuItem, Fade } from '@material-ui/core'
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import tableIcons from '../styles/tableIcons'
-import MaterialTable, { MTableActions, MTableCell, MTableBodyRow, MTableBody, MTableEditRow, MTableToolbar } from 'material-table'
+import MaterialTable, { MTableCell, MTableBodyRow, MTableEditRow, MTableToolbar } from 'material-table'
 import MyAction from './MyAction'
 
 import users_list from '../static/Usertypes'
 
 import firebase from '../firebase'
 
-
 const styles = {
+    // textField components for editRow cells
     textfield: {
         color: '#707070',
-        padding: '10px'
+        "&:hover": {
+            color: '#2B2B2B',
+        },
     }, 
+    // select components for editRow cells
+    select: {
+        textAlign: 'center',
+        color: '#707070',
+        "&:focus": {
+            backgroundColor: "#FFFFFF"
+        },
+        "&:hover": {
+            color: '#2B2B2B',
+        },
+    },
+    // rows (edit + normal)
     tableRow: {
         color: '#707070',
         "& td": {
             border: "1px solid black !important",
-            padding: '1px',
-            margin: '0px'
         }
     }, 
+    // toolBar 
     toolBar: { 
         padding: '0px', 
         margin: '0px',
-
     }, 
     Icon: {
         color: '#707070',
@@ -43,40 +55,24 @@ const styles = {
             color: '#2B2B2B'
         }
     },
-    select: {
-        textAlign: 'center',
-        color: '#707070',
-        "&:focus": {
-            backgroundColor: "#FFFFFF"
-        },
-        "&:hover": {
-            color: '#2B2B2B',
-        },
-    },
 }
 
 class OnlineTable extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            pathname: 'Enthusiasts',   
-            chosenCategory: '', 
-            web: 'Online',
-            categories: [],
+            web: 'Online', // 'Online' or 'Offline'
+            pathname: 'Enthusiasts', // indicates the User
+
+            categories: [], // list of category names
+            chosenCategoryId: '', // chosenCategoryId
 
             data:[],
             isLoaded: false,
         }
-        // this.getChannelPromise = this.getChannelPromise.bind(this)
     }
 
-    // getChannelPromise (id) {
-    //     return firebase.database().ref('/channels/' + id).once('value', async (snapshot) => {
-    //         console.log(snapshot.val())
-    //         return snapshot.val()
-    //     })
-    // }
-
+    // called when 1) pathname/user changes or 2) chosenCategory changes
     update() {
         // const { pathname } = this.state 
         // const catRef = firebase.database().ref('/order/' + pathname)
@@ -88,54 +84,25 @@ class OnlineTable extends Component {
         //     })
         // })
 
-        // const { pathname, chosenCategory, web } = this.state
-        // firebase.database().ref('/'+ web +'/'+ pathname +'/'+ chosenCategory).on('value').then((snapshot) => {
-        //     const channelIds = snapshot.value()
-        //     let promises = []
-        //     channelIds.forEach((id) => {
-        //         promises.push(this.getChannelPromise(id))
-        //     })
-        //     return Promise.all(promises)
-        // }, (err) => {
-        //     console.log(err)
-        // }).then((channels) => {
-        //     this.setState({ data: channels, isLoaded: true})
-        // }, (err) => {
-        //     console.log(err)
-        // })
+        const { pathname, chosenCategoryId } = this.state
 
-
-        // const { pathname, chosenCategory, web } = this.props
-        // // let channelsRef = firebase.database().ref( web + '/' + pathname + '/' + chosenCategory + '/')
-        // let channelsRef = firebase.database().ref('Online/Enthusiasts/Social')
-        // channelsRef.on('value', async (snapshot) => {
-        //     let channelPromises = []
-        //     console.log(snapshot.val())
-        //     snapshot.forEach((channelSnapShot) => {
-        //         console.log(channelSnapShot.key)
-        //         channelPromises.push(firebase.database().ref('/channels/' + channelSnapShot.key).once('value', async (snapshot) => {
-        //             console.log(snapshot.val())
-        //             return snapshot.val()
-        //     }))
-        //     })
-        //     let channelSnapshots = await Promise.all(channelPromises)
-        //     channelSnapshots.forEach((a) => console.log (a.val()))
-        //     this.setState({ data: channelSnapshots, isLoaded: true})
-        // })
-
-        const { pathname, chosenCategory, web } = this.state
-        // let channelsRef = firebase.database().ref( web + '/' + pathname + '/' + chosenCategory + '/')
-        let channelsRef = firebase.database().ref('Online/Enthusiasts/Social')
-        channelsRef.on('value', async (snapshot) => {
+        let channelIdsRef = firebase.database().ref('Online/' + pathname + '/' + chosenCategoryId)
+        channelIdsRef.on('value', async (snapshot) => {
             let channels = []
             let channelPromises = []
-            // console.log(snapshot.val())
+
             snapshot.forEach((channelSnapShot) => {
                 channelPromises.push(firebase.database().ref('/channels/' + channelSnapShot.key).once('value'))
             })
+
             await Promise.all(channelPromises).then((snapshots) => {
-                snapshots.forEach((snapshot) => channels.push(snapshot.val()))
+                snapshots.forEach((snapshot) => {
+                    let channelDetails = snapshot.val()
+                    channelDetails['id'] = snapshot.key
+                    channels.push(channelDetails)
+                })
             })
+            console.log(channels)
             
             this.setState({ data: channels, isLoaded: true })
         })
@@ -148,12 +115,10 @@ class OnlineTable extends Component {
     static getDerivedStateFromProps(nextProps, prevState) {
         const newPathname = nextProps.location.pathname.substring(1) || users_list[0]
         return (newPathname.toLowerCase() !== prevState.pathname.toLowerCase() || 
-            nextProps.chosenCategory !== prevState.chosenCategory || 
-            nextProps.web !== prevState.web)
+            nextProps.chosenCategoryId !== prevState.chosenCategoryId )
             ? {
                 pathname: newPathname, 
-                chosenCategory: nextProps.chosenCategory,
-                web: nextProps.web,
+                chosenCategoryId: nextProps.chosenCategoryId,
                 isLoaded: false,
             }
             : null
@@ -165,24 +130,24 @@ class OnlineTable extends Component {
         }
     }
 
-    // onKeyPress = (e) => {
-    //     if (e.key === 'Enter') {
-    //         console.log("enter")
-    //         e.preventDefault(); // Let's stop this event.
-    //         e.stopPropagation()
-    //     }
-    // }
-
     render() {
-        const { isLoaded } = this.state
+        const { isLoaded, pathname, data } = this.state
         const { classes } = this.props
-        // console.log(this.state.data)
+
+        const title =  'Online User: '+ pathname  
+
+        let pageSizes = [10, 20, 30]
+        if (data.length > 30) pageSizes.push(data.length)
+
+        console.log(this.state.data)
         return (
-            isLoaded 
-                ? 
+            <Fade in = {isLoaded} >
                 <MaterialTable
-                    // icons = {tableIcons}
+
+                    title = {title}
+
                     style={{ margin: '30px' }}
+
                     columns={[
                         {   title: 'Channels', 
                             field: 'channel', 
@@ -205,20 +170,17 @@ class OnlineTable extends Component {
                             width: '7%',
                             editComponent: props => (
                                 <Select
+                                    value={props.value}
+                                    onChange={e => props.onChange(e.target.value)}
                                     fullWidth
                                     disableUnderline
                                     inputProps={{
                                         classes: { select: classes.select }
                                     }}
-                                    defaultValue = {1}
-                                    value={props.value}
-                                    onChange={e => props.onChange(e.target.value)}
                                 >
                                     <MenuItem value={1}>1</MenuItem>
                                     <MenuItem value={2}>2</MenuItem>
                                     <MenuItem value={3}>3</MenuItem>
-                                    <MenuItem value={4}>4</MenuItem>
-                                    <MenuItem value={5}>5</MenuItem>
                                 </Select>
                             ),
                         },
@@ -321,12 +283,59 @@ class OnlineTable extends Component {
                             ),
                         },
                     ]}
-                    // data={[{ channel: 'StackOverflow', customer_description: 'description', rating: 3, TPMC: 'FAANG', leverage: 'leverage', link: 'StackOverflow.com' },
-                    //     { channel: 'StackOverflow', customer_description: 'description', rating: 2, TPMC: 'FAANG', leverage: 'leverage', link: 'StackOverflow.com' }]}
-                    // data={Array.from(this.state.data)}
-                    data = {this.state.data}
+
+                    icons={tableIcons}
+
+                    components={{
+                        Container: props => <Paper {...props} elevation={0} />,
+                        Cell: props => < MTableCell {...props} style={{
+                            margin: '0px',
+                            padding: '10px',
+                            textAlign: 'center',
+                            wordBreak: 'break-word',
+                            hyphens: 'auto',
+                        }} />,
+                        EditRow: props => (
+                            <MTableEditRow {...props} className={classes.tableRow} 
+                                onKeyDown={(e) => {
+                                    if (e.keyCode === 27) {
+                                        props.onEditingCanceled(props.mode, props.data)
+                                    }
+                                }} 
+                            />
+                        ),
+                        Row: props => (
+                            <MTableBodyRow {...props} className={classes.tableRow} />
+                        ),
+                        Action: props => <MyAction {...props} />,
+                        Toolbar: props => (
+                            <MTableToolbar {...props} classes={{ root: classes.toolBar }} />
+                        )
+                    }}
+
+                    data = {data}
+
+                    localization={{
+                        body: {
+                            emptyDataSourceMessage: 'No channels to display.',
+                            addTooltip: '',
+                            deleteTooltip: '',
+                            editTooltip: '',
+                            editRow:{
+                                deleteText: '\xa0\xa0Are you sure you want to delete this channel?'
+                            }
+                        },
+                        pagination: {
+                            labelRowsSelect: 'channels',
+                            labelRowsPerPage: 'Channels per page:'
+                        }
+                    }}
 
                     options={{  
+                        actionsCellStyle: { padding: '1px', margin: '0px' },
+                        emptyRowsWhenPaging: false,
+                        exportButton: true,
+                        exportFileName: title,
                         headerStyle: {  backgroundColor: '#707070', 
                                         color: '#FFFFFF', 
                                         fontSize: '16px', 
@@ -334,62 +343,25 @@ class OnlineTable extends Component {
                                         wordBreak: 'break-word', 
                                         border: '1px solid black', 
                                         textAlign: 'center' }, 
-                        actionsCellStyle: { padding: '1px', margin: '0px' },
-                        showTitle: false, 
-                        draggable: false, 
-                        // toolbar: false,
-                        tableLayout: 'fixed',
-                        search: false,
-                        emptyRowsWhenPaging: false,
                         loadingType: 'linear', 
-                        toolbarButtonAlignment: 'left'
-                    }}
-
-                    localization= {{
-                        body: {
-                            addTooltip: '', 
-                            deleteTooltip: '',
-                            editTooltip: ''
-                        }
-                    }}
-
-                    components={{
-                        Container: props => <Paper {...props} elevation={0} />,
-                        Cell: props => < MTableCell {...props} style={{ margin: '0px',
-                                                                        padding: '10px',
-                                                                        textAlign: 'center', 
-                                                                        wordBreak: 'break-word', 
-                                                                        hyphens: 'auto',
-                                                                     }} />, 
-                        EditRow: props => (
-                            <MTableEditRow {...props} className={classes.tableRow} />
-                        ),
-                        Row: props => (
-                            <MTableBodyRow {...props} className={classes.tableRow} />
-                        ), 
-                        Action: props => <MyAction {...props} />, 
-                        Toolbar: props => (
-                            <MTableToolbar {...props} classes={{root: classes.toolBar}}/>
-                        )
+                        pageSize: 10, 
+                        pageSizeOptions: pageSizes,
+                        paginationType: 'stepped',
+                        search: false,
+                        tableLayout: 'fixed',
+                        showTitle: false, 
+                        toolbarButtonAlignment: 'left',
+                        draggable: false, 
                     }}
 
                     editable={{
                         onRowAdd: newData =>
                             new Promise((resolve, reject) => {
-                                // setTimeout(() => {
-                                //     const data = this.state.data
-                                //     data.push(newData);
-                                //     console.log(data)
-                                //     this.setState({data: data},
-
-                                //     resolve());
-                                // }, 1000)
                                 setTimeout(() => {
-                                    const { web, pathname, chosenCategory } = this.state
-                                    const channelsRef = firebase.database().ref('channels')
-                                    let channelsKey = channelsRef.push(newData).key;
+                                    const { pathname, chosenCategoryId } = this.state
+                                    const channelsKey = firebase.database().ref('channels').push(newData).key;
 
-                                    firebase.database().ref('/' + web + '/' + pathname + '/' + chosenCategory + '/'+ channelsKey).set(true)
+                                    firebase.database().ref('Online/' + pathname + '/' + chosenCategoryId + '/'+ channelsKey).set(true)
 
                                     resolve();
                                 }, 1000);
@@ -397,26 +369,33 @@ class OnlineTable extends Component {
                         onRowUpdate: (newData, oldData) =>
                             new Promise((resolve, reject) => {
                                 setTimeout(() => {
-                                    const data = this.state.data
-                                    data.push(newData);
-                                    console.log(data)
-                                    const index = oldData.tableData.id
+                                    console.log(newData)
+                                    console.log(oldData)
+                                    
+                                    const { data } = this.state
+                                    firebase.database().ref('channels/'+oldData.id).set(newData)
+                                    const foundIndex = data.findIndex(channel => channel.id === newData.id)
+                                    data[foundIndex] = newData
+                                    this.setState({ data: data})
+                                    /* Loop through any new Categories added!! */
                                     resolve();
                                 }, 1000)
                             }),
                         onRowDelete: oldData =>
                             new Promise((resolve, reject) => {
                                 setTimeout(() => {
-                                    const data = this.state.data
-                                    data.push(oldData);
-                                    console.log(data)
+                                    const { pathname, chosenCategoryId } = this.state
+                                    // if (oldData.categories.length === 1){ 
 
+                                    // }
+                                    console.log(oldData)
+                                    firebase.database().ref('Online/' + pathname + '/' + chosenCategoryId + '/' + oldData.id).remove()
                                     resolve()
                                 }, 1000)
                             }),
                     }}
                 />
-                : null
+            </Fade>
         )
         
     }

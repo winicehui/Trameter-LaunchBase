@@ -1,5 +1,4 @@
 import React, { forwardRef } from 'react'
-import { withStyles } from "@material-ui/core/styles";
 
 import { Add, ArrowDownward, Check, ChevronLeft, ChevronRight, Clear, DeleteOutline, Edit, FilterList, FirstPage, 
     LastPage, Remove, SaveAlt, Search, ViewColumn} from '@material-ui/icons';

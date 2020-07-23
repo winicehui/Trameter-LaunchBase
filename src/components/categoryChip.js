@@ -12,13 +12,13 @@ class CategoryChip extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            index: null,
-            id: null,
-            category:'',
-            chosenCategory: '',
+            index: null, // index in list of categories (react-beautiful-dnd)
+            id: null, // category Id
+            category:'', // category Name
+            chosenCategoryId: '', // chosen category Id
         
-            edit: false,
-            textEdit: false, 
+            edit: false, // T/F condition for toolbar editing setting
+            textEdit: false, // T/F condition for chip editing
 
             isLoaded: false, 
         }
@@ -30,20 +30,18 @@ class CategoryChip extends Component {
         this.deleteCategory = this.deleteCategory.bind(this);
     }
 
-    async componentDidMount(){
-        const { index, category, chosenCategory, edit } = this.props
-        firebase.database().ref('/categories/' + category).on('value', (snapshot) => {
+    componentDidMount(){
+        const { index, categoryId, chosenCategoryId, edit } = this.props
+        firebase.database().ref('/categories/' + categoryId).on('value', (snapshot) => {
             let categoryName = snapshot.val()
-            console.log(category)
-            console.log(categoryName)
             this.setState({
                 index: index,
-                id: category,
+                id: categoryId,
                 category: categoryName,
-                chosenCategory: chosenCategory,
+                chosenCategoryId: chosenCategoryId,
 
                 edit: edit,
-                textEdit: false,
+                textEdit: false, 
 
                 isLoaded: true,
             })
@@ -51,10 +49,10 @@ class CategoryChip extends Component {
     }
 
     static getDerivedStateFromProps(nextProps, prevState) {
-        return (nextProps.chosenCategory !== prevState.chosenCategory || 
+        return (nextProps.chosenCategoryId !== prevState.chosenCategoryId || 
             nextProps.edit !== prevState.edit || 
             nextProps.index !== prevState.index)
-            ? { chosenCategory: nextProps.chosenCategory, 
+            ? { chosenCategoryId: nextProps.chosenCategoryId, 
                 edit: nextProps.edit, 
                 index: nextProps.index,
                 textEdit: !nextProps.edit ? false : prevState.textEdit, 
@@ -78,8 +76,8 @@ class CategoryChip extends Component {
     //     }
     // }
     
-    toggleCategory = (e, category) => {
-        this.props.handleToggleCategory(category)
+    toggleCategory = (e, categoryId) => {
+        this.props.handleToggleCategory(categoryId)
     }
 
     toggleTextEdit = (e) => {
@@ -111,13 +109,13 @@ class CategoryChip extends Component {
     }
 
     render() {
-        const { index, id, category, chosenCategory, edit, textEdit, isLoaded  } = this.state
+        const { index, id, category, chosenCategoryId, edit, textEdit, isLoaded  } = this.state
         const { classes } = this.props
         const width = (category.length + 1) * 8 + 'px'
         return (
             isLoaded 
             ? <Draggable 
-                    draggableId={category} 
+                    draggableId={id} 
                     index={index}
                     // isDragDisabled = {edit}
                 >
@@ -129,8 +127,8 @@ class CategoryChip extends Component {
                             {!textEdit || !edit 
                                 ? <Chip
                                     label={category}
-                                    variant={edit && chosenCategory !== id? "outlined" : "default"}
-                                    className = { chosenCategory === id ? classes.selectedButton : snapshot.isDragging ? classes.isDraggingButton : classes.Button }
+                                    variant={edit && chosenCategoryId !== id? "outlined" : "default"}
+                                    className = { chosenCategoryId === id ? classes.selectedButton : snapshot.isDragging ? classes.isDraggingButton : classes.Button }
                                     style={{
                                         margin: '9px 10px 9px 10px',
                                         borderRadius: '8px',

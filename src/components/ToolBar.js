@@ -24,7 +24,7 @@ class ToolBar extends Component {
             pathname: 'Enthusiasts', // indicates User
 
             categoryIDs: [], // list of categoryIDs of categories for specified User
-            chosenCategoryId: '', // categoryID of chosen Category
+            chosenCategoryId: '-1', // categoryID of chosen Category
 
             edit: false, // T/F condiition for editing in toolbar
 
@@ -52,39 +52,18 @@ class ToolBar extends Component {
     update = () => {
         const { pathname } = this.state
         const orderRef = firebase.database().ref('/order/' + pathname)
-        orderRef.on('value', /*async*/ (snapshot) => {
+        orderRef.on('value', (snapshot) => { // called each time order of categories changes
             const { chosenCategoryId, web } = this.state 
-
             let categoryIDs = snapshot.val() || [];
-            // let getCategoryPromises = [];
-            // snapshot.val().forEach((categoryId) => {
-            //     console.log(categoryId)
-            //     getCategoryPromises.push(firebase.database().ref('/categories/'+ categoryId).once('value'))
-            // })
-            
-            // await Promise.all(getCategoryPromises).then((results) => {
-            //     results.forEach((category) => categories.push(category.val()))
-            // })
-
-            const newChosenCategoryId = !chosenCategoryId ? (categoryIDs ? categoryIDs[0] : '') : chosenCategoryId
-
+            // const newChosenCategoryId = !chosenCategoryId ? (categoryIDs ? categoryIDs[0] : '') : chosenCategoryId
+            const newChosenCategoryId = (chosenCategoryId === '-1') ? (categoryIDs ? categoryIDs[0] : '') : chosenCategoryId
             this.setState({
                 categoryIDs: categoryIDs, 
                 chosenCategoryId: newChosenCategoryId,
                 isLoaded: true
             })
-            this.props.handleToggleCategory(newChosenCategoryId) // send back to parent component 
+            this.props.handleToggleCategory(newChosenCategoryId) // send back to parent component
             this.props.handleToggleWeb(web) // send back to parent component (typically 'Online')
-            
-            // let categories = snapshot.val() || [];
-            // const newChosenCategory = !chosenCategory ? (categories ? categories[0] : '') : chosenCategory
-            // this.setState({                 
-            //     categories: categories,
-            //     chosenCategory: newChosenCategory,
-            //     isLoaded: true,                 
-            // })
-            // this.props.handleToggleCategory(newChosenCategory) // send back to parent component 
-            // this.props.handleToggleWeb(web) // send back to parent component (typically 'Online')
         })
     }
 
@@ -100,7 +79,7 @@ class ToolBar extends Component {
                 pathname: newPathname,
                 
                 categoryIDs: [],
-                chosenCategoryId: '',
+                chosenCategoryId: '-1',
 
                 edit: false,
 
@@ -137,59 +116,34 @@ class ToolBar extends Component {
     }
 
     handleCategoryChange = (newCategoryName, index) => {
-        const { categoryIDs, chosenCategoryId } = this.state
-        if (categoryIDs[index] === chosenCategoryId) {
-            this.setState({ chosenCategoryId: newCategoryName }, users_list.forEach(user => {
-                const orderRef = firebase.database().ref('/order/' + user)
-                orderRef.once('value', snapshot => {
-                    const user_categories = snapshot.val() || []
-                    const i = user_categories.indexOf(categoryIDs[index])
-                    const newCategories = Array.from(user_categories)
-                    newCategories[i] = newCategoryName
-                    firebase.database().ref('/order/' + user).set(newCategories)
-                })
-            }))
-            this.props.handleToggleCategory(newCategoryName)
-        } else { 
-            users_list.forEach(user => {
-                const orderRef = firebase.database().ref('/order/' + user)
-                orderRef.once('value', snapshot => {
-                    const user_categories = snapshot.val() || []
-                    const i = user_categories.indexOf(categoryIDs[index])
-                    const newCategories = Array.from(user_categories)
-                    newCategories[i] = newCategoryName 
-                    firebase.database().ref('/order/'+user).set(newCategories)
-                })
-            })
-        }
+        const { categoryIDs } = this.state
+
+        let changeCategoryId = categoryIDs[index] 
+        firebase.database().ref('categories/' + changeCategoryId).set(newCategoryName)
     }
 
-    handleDeleteCategory = (index) => {
+    handleDeleteCategory = async (index) => {
         const { categoryIDs, chosenCategoryId } = this.state
-        const deletedCategory = categoryIDs[index]
-        if (categoryIDs[index] === chosenCategoryId) {
-            this.setState({ chosenCategoryId: categoryIDs[(index+1)] }, users_list.forEach(user => {
-                const orderRef = firebase.database().ref('/order/' + user)
-                orderRef.once('value', snapshot => {
-                    const user_categories = snapshot.val() || []
-                    const i = user_categories.indexOf(deletedCategory)
-                    const newCategories = Array.from(user_categories)
-                    newCategories.splice(i, 1)
-                    firebase.database().ref('/order/' + user).set(newCategories)
-                })
-            }))
-            this.props.handleToggleCategory(categoryIDs[(index+1)])
-        } else {
-            users_list.forEach(user => {
-                const orderRef = firebase.database().ref('/order/' + user)
-                orderRef.once('value', snapshot => {
-                    const user_categories = snapshot.val() || []
-                    const i = user_categories.indexOf(deletedCategory)
-                    const newCategories = Array.from(user_categories)
-                    newCategories.splice(i, 1)
-                    firebase.database().ref('/order/' + user).set(newCategories)
-                })
+        const deletedCategoryId = categoryIDs[index]
+
+        firebase.database().ref('categories/' + deletedCategoryId).remove()
+
+        let deletePromises = []
+
+        users_list.forEach((user) => {
+            const orderRef = firebase.database().ref('/order/' + user)
+            orderRef.once('value', snapshot => {
+                const user_categoryIds = snapshot.val() || []
+                const i = user_categoryIds.indexOf(deletedCategoryId)
+                const newCategoryIds = Array.from(user_categoryIds)
+                newCategoryIds.splice(i, 1)
+                deletePromises.push(firebase.database().ref('/order/' + user).set(newCategoryIds))
             })
+        })
+        await Promise.all(deletePromises)
+        if (deletedCategoryId === chosenCategoryId) {
+            this.setState({ chosenCategoryId: categoryIDs[(index + 1)]})
+            this.props.handleToggleCategory(categoryIDs[(index + 1)])
         }
     }
 
@@ -215,36 +169,22 @@ class ToolBar extends Component {
                     newCategory: '' 
                 })
             } else {
-                // this.setState({ 
-                //     anchorE1: null, 
-                //     openAdd: !openAdd, 
-                //     newCategory: '', 
-                //     chosenCategory: newCategory},
-                //     users_list.forEach(user => {
-                //         const orderRef = firebase.database().ref('/order/' + user)
-                //         orderRef.once('value', snapshot => {
-                //             const user_categories = snapshot.val() || []
-                //             const newCategories = Array.from(user_categories)
-                //             newCategories.push(newCategory)
-                //             firebase.database().ref('/order/' + user).set(newCategories)
-                //         })
-                //     })
-                // )
-
                 let newCategoryKey = await firebase.database().ref('categories/').push(newCategory).key
                 let addCategoryPromises = []
 
                 users_list.forEach(user => {
                     addCategoryPromises.push(firebase.database().ref('/order/'+user+'/'+categoryIDs.length).set(newCategoryKey))
                 })
+                
                 await Promise.all(addCategoryPromises)
+                
                 this.setState({
                     anchorE1: null,
                     openAdd: !openAdd,
                     newCategory: '',
-                    chosenCategoryId: newCategory
+                    chosenCategoryId: newCategoryKey
                 })
-                this.props.handleToggleCategory(newCategory)
+                this.props.handleToggleCategory(newCategoryKey)
             }
         }
     }
@@ -327,7 +267,7 @@ class ToolBar extends Component {
                                                             <CategoryChip 
                                                                 key = {element} 
                                                                 index = {i} 
-                                                                category = {element} 
+                                                                categoryId = {element} 
                                                                 chosenCategoryId = {chosenCategoryId}
                                                                 edit = {edit} 
                                                                 handleToggleCategory = {this.handleToggleCategory}

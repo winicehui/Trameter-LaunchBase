@@ -8,13 +8,13 @@ class Body extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            chosenCategory: '',
+            chosenCategoryId: '',
             web: 'Online', 
         }
     }
 
-    handleToggleCategory = (category) => {
-        this.setState({ chosenCategory: category})
+    handleToggleCategory = (categoryId) => {
+        this.setState({ chosenCategoryId: categoryId})
     }
 
     handleToggleWeb = (web) => {
@@ -22,19 +22,22 @@ class Body extends Component {
     }
 
     render() {
-        const { chosenCategory, web} = this.state
+        const { chosenCategoryId, web} = this.state
+        console.log(chosenCategoryId)
         return (
             <React.Fragment> 
                     <ToolBar 
                         handleToggleCategory = {this.handleToggleCategory} 
                         handleToggleWeb = {this.handleToggleWeb}
                     />
-                    { web === 'Online' 
-                        ? <OnlineTable
-                            chosenCategory={chosenCategory}
-                            web={web}
-                        />
-                        : null 
+                    { !chosenCategoryId 
+                        ? null 
+                        : web === 'Online' 
+                            ? <OnlineTable
+                                chosenCategoryId={chosenCategoryId}
+                                web={web}
+                            />
+                            : null 
                     }
             </React.Fragment>
         );

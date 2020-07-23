@@ -127,7 +127,7 @@ class OnlineTable extends Component {
         // let channelsRef = firebase.database().ref( web + '/' + pathname + '/' + chosenCategory + '/')
         let channelsRef = firebase.database().ref('Online/Enthusiasts/Social')
         channelsRef.on('value', async (snapshot) => {
-            var channels = []
+            let channels = []
             let channelPromises = []
             // console.log(snapshot.val())
             snapshot.forEach((channelSnapShot) => {
@@ -387,7 +387,7 @@ class OnlineTable extends Component {
                                 setTimeout(() => {
                                     const { web, pathname, chosenCategory } = this.state
                                     const channelsRef = firebase.database().ref('channels')
-                                    var channelsKey = channelsRef.push(newData).key;
+                                    let channelsKey = channelsRef.push(newData).key;
 
                                     firebase.database().ref('/' + web + '/' + pathname + '/' + chosenCategory + '/'+ channelsKey).set(true)
 

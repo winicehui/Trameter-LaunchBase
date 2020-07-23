@@ -4,6 +4,8 @@ import { withStyles } from "@material-ui/core/styles";
 import { Chip , TextField } from '@material-ui/core';
 import { Draggable } from 'react-beautiful-dnd';
 
+import firebase from '../firebase'
+
 import styles from '../styles/categoryChipStyles'
 
 class CategoryChip extends Component {
@@ -11,6 +13,7 @@ class CategoryChip extends Component {
         super(props)
         this.state = {
             index: null,
+            id: null,
             category:'',
             chosenCategory: '',
         
@@ -27,17 +30,23 @@ class CategoryChip extends Component {
         this.deleteCategory = this.deleteCategory.bind(this);
     }
 
-    componentDidMount(){
+    async componentDidMount(){
         const { index, category, chosenCategory, edit } = this.props
-        this.setState({
-            index: index,
-            category: category, 
-            chosenCategory: chosenCategory,
-            
-            edit: edit, 
-            textEdit: false,
-            
-            isLoaded: true, 
+        firebase.database().ref('/categories/' + category).on('value', (snapshot) => {
+            let categoryName = snapshot.val()
+            console.log(category)
+            console.log(categoryName)
+            this.setState({
+                index: index,
+                id: category,
+                category: categoryName,
+                chosenCategory: chosenCategory,
+
+                edit: edit,
+                textEdit: false,
+
+                isLoaded: true,
+            })
         })
     }
 
@@ -102,7 +111,7 @@ class CategoryChip extends Component {
     }
 
     render() {
-        const { index, category, chosenCategory, edit, textEdit, isLoaded  } = this.state
+        const { index, id, category, chosenCategory, edit, textEdit, isLoaded  } = this.state
         const { classes } = this.props
         const width = (category.length + 1) * 8 + 'px'
         return (
@@ -120,8 +129,8 @@ class CategoryChip extends Component {
                             {!textEdit || !edit 
                                 ? <Chip
                                     label={category}
-                                    variant={edit && chosenCategory !== category? "outlined" : "default"}
-                                    className = { chosenCategory === category ? classes.selectedButton : snapshot.isDragging ? classes.isDraggingButton : classes.Button }
+                                    variant={edit && chosenCategory !== id? "outlined" : "default"}
+                                    className = { chosenCategory === id ? classes.selectedButton : snapshot.isDragging ? classes.isDraggingButton : classes.Button }
                                     style={{
                                         margin: '9px 10px 9px 10px',
                                         borderRadius: '8px',
@@ -129,7 +138,7 @@ class CategoryChip extends Component {
                                         cursor: 'pointer',
                                         fontWeight: !snapshot.isDragging ? 'normal' : '500', 
                                     }}
-                                    onClick={!edit ? (e) => { this.toggleCategory(e, category) } : this.toggleTextEdit}
+                                    onClick={!edit ? (e) => { this.toggleCategory(e, id) } : this.toggleTextEdit}
                                     onDelete={!edit ? undefined : this.deleteCategory}
                                     {...provided.dragHandleProps}
                                 />

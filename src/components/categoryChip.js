@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { withStyles } from "@material-ui/core/styles";
 
-import { Chip , TextField } from '@material-ui/core';
+import { Chip , TextField, Fade } from '@material-ui/core';
 import { Draggable } from 'react-beautiful-dnd';
 
 import firebase from '../firebase'
@@ -113,8 +113,8 @@ class CategoryChip extends Component {
         const { classes } = this.props
         const width = (category.length + 1) * 8 + 'px'
         return (
-            isLoaded 
-            ? <Draggable 
+            <Fade in = {isLoaded}>
+                <Draggable 
                     draggableId={id} 
                     index={index}
                     // isDragDisabled = {edit}
@@ -156,7 +156,7 @@ class CategoryChip extends Component {
                         </div>
                     )}
                 </Draggable>
-            : null   
+            </Fade>
         );
     }
 }

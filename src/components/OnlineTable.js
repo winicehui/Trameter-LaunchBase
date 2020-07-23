@@ -65,7 +65,7 @@ class OnlineTable extends Component {
             pathname: 'Enthusiasts', // indicates the User
 
             categories: [], // list of category names
-            chosenCategoryId: '', // chosenCategoryId
+            chosenCategoryId: '-1', // chosenCategoryId
 
             data:[],
             isLoaded: false,
@@ -82,15 +82,14 @@ class OnlineTable extends Component {
         //         categories: categories || [],
         //         isLoaded: true
         //     })
-        // })
-
+        // }) 
         const { pathname, chosenCategoryId } = this.state
 
         let channelIdsRef = firebase.database().ref('Online/' + pathname + '/' + chosenCategoryId)
         channelIdsRef.on('value', async (snapshot) => {
             let channels = []
             let channelPromises = []
-
+            
             snapshot.forEach((channelSnapShot) => {
                 channelPromises.push(firebase.database().ref('/channels/' + channelSnapShot.key).once('value'))
             })
@@ -102,8 +101,6 @@ class OnlineTable extends Component {
                     channels.push(channelDetails)
                 })
             })
-            console.log(channels)
-            
             this.setState({ data: channels, isLoaded: true })
         })
     }
@@ -118,7 +115,7 @@ class OnlineTable extends Component {
             nextProps.chosenCategoryId !== prevState.chosenCategoryId )
             ? {
                 pathname: newPathname, 
-                chosenCategoryId: nextProps.chosenCategoryId,
+                chosenCategoryId: newPathname.toLowerCase() !== prevState.pathname.toLowerCase() ? -1 : nextProps.chosenCategoryId,
                 isLoaded: false,
             }
             : null
@@ -139,9 +136,8 @@ class OnlineTable extends Component {
         let pageSizes = [10, 20, 30]
         if (data.length > 30) pageSizes.push(data.length)
 
-        console.log(this.state.data)
         return (
-            <Fade in = {isLoaded} >
+            <Fade in = {isLoaded}>
                 <MaterialTable
 
                     title = {title}
@@ -369,8 +365,6 @@ class OnlineTable extends Component {
                         onRowUpdate: (newData, oldData) =>
                             new Promise((resolve, reject) => {
                                 setTimeout(() => {
-                                    console.log(newData)
-                                    console.log(oldData)
                                     
                                     const { data } = this.state
                                     firebase.database().ref('channels/'+oldData.id).set(newData)
@@ -388,14 +382,13 @@ class OnlineTable extends Component {
                                     // if (oldData.categories.length === 1){ 
 
                                     // }
-                                    console.log(oldData)
                                     firebase.database().ref('Online/' + pathname + '/' + chosenCategoryId + '/' + oldData.id).remove()
                                     resolve()
                                 }, 1000)
                             }),
                     }}
                 />
-            </Fade>
+            </Fade> 
         )
         
     }

@@ -176,7 +176,7 @@ class ToolBar extends Component {
                     addCategoryPromises.push(firebase.database().ref('/order/'+user+'/'+categoryIDs.length).set(newCategoryKey))
                 })
                 
-                await Promise.all(addCategoryPromises)
+                Promise.all(addCategoryPromises)
                 
                 this.setState({
                     anchorE1: null,
@@ -249,7 +249,7 @@ class ToolBar extends Component {
                                 className = {classes.MiddleToolbox}
                                 >
                                 
-                                {isLoaded ? 
+                                {/* {isLoaded ?  */}
                                     <Droppable droppableId = "categories" direction = "horizontal">
                                             {(provided, snapshot) => (
                                                 <div
@@ -280,8 +280,7 @@ class ToolBar extends Component {
                                                 </div>
                                             )}
                                         </Droppable>   
-                                    : null 
-                                }
+                                    {/* : null  */}
                             </Grid>
 
                             <Grid item 
@@ -340,6 +339,7 @@ class ToolBar extends Component {
                         sm={10}
                         md={10}
                         lg={11}
+                        style = {{height: '50px'}}
                     /> }
                 </Grid>
             </DragDropContext>

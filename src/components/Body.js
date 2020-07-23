@@ -3,6 +3,8 @@ import React, { Component } from 'react';
 import ToolBar from './ToolBar'
 import OnlineTable from './OnlineTable'
 
+import { Fade } from '@material-ui/core'
+
 class Body extends Component {
     constructor(props) {
         super(props)
@@ -13,7 +15,7 @@ class Body extends Component {
     }
 
     handleToggleCategory = (categoryId) => {
-        this.setState({ chosenCategoryId: categoryId})
+        this.setState({ chosenCategoryId: categoryId })
     }
 
     handleToggleWeb = (web) => {
@@ -22,6 +24,7 @@ class Body extends Component {
 
     render() {
         const { chosenCategoryId, web} = this.state
+        console.log("body" + chosenCategoryId)
         return (
             <React.Fragment> 
                     <ToolBar 
@@ -31,9 +34,11 @@ class Body extends Component {
                     { !chosenCategoryId 
                         ? null 
                         : web === 'Online' 
-                            ? <OnlineTable
+                            ? <Fade in = {true}> 
+                                <OnlineTable
                                     chosenCategoryId={chosenCategoryId}
                                 />
+                        </Fade>
                             : null 
                     }
             </React.Fragment>

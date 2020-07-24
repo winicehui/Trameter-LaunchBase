@@ -111,7 +111,7 @@ class CategoryChip extends Component {
     render() {
         const { index, id, category, chosenCategoryId, edit, textEdit, isLoaded  } = this.state
         const { classes } = this.props
-        const width = (category.length + 1) * 8 + 'px'
+        const width = category ?  (category.length + 1) * 8 + 'px' : '0px'
         return (
             <Fade in = {isLoaded}>
                 <Draggable 

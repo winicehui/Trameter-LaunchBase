@@ -22,7 +22,6 @@ const styles = {
     }, 
     // select components for editRow cells
     select: {
-        textAlign: 'center',
         color: '#707070',
         "&:focus": {
             backgroundColor: "#FFFFFF"
@@ -43,6 +42,19 @@ const styles = {
         padding: '0px', 
         margin: '0px',
     }, 
+    //sub/link styling
+    hyperlink:{
+        textAlign: 'center',
+        "&:link":{
+            color: '#353B51',
+        },
+        "&:hover": {
+            color: '#2B2B2B',
+        },
+        "&:visited": {
+            color: '#663366',
+        },
+    },
     Icon: {
         color: '#707070',
         "&:hover": {
@@ -52,7 +64,7 @@ const styles = {
             color: '#2B2B2B'
         },
         "&:active": {
-            color: '#2B2B2B'
+            color: '#646f98'
         }
     },
 }
@@ -111,13 +123,18 @@ class OnlineTable extends Component {
 
     static getDerivedStateFromProps(nextProps, prevState) {
         const newPathname = nextProps.location.pathname.substring(1) || users_list[0]
+        const cat_updated = nextProps.categories.sort().toString() !== (prevState.categories).sort().toString()
+        // console.log(nextProps.categories)
+
         return (newPathname.toLowerCase() !== prevState.pathname.toLowerCase() || 
-            nextProps.chosenCategoryId !== prevState.chosenCategoryId )
+            nextProps.chosenCategoryId !== prevState.chosenCategoryId)
             ? {
                 pathname: newPathname, 
                 chosenCategoryId: newPathname.toLowerCase() !== prevState.pathname.toLowerCase() ? -1 : nextProps.chosenCategoryId,
+                categories: nextProps.categories,
                 isLoaded: false,
             }
+            // : cat_updated ? { categories: nextProps.categories } : null
             : null
     }
 
@@ -149,6 +166,11 @@ class OnlineTable extends Component {
                             field: 'channel', 
                             width: "10%",
                             sorting: false,
+                            render: rowData => {
+                                let data = rowData.channel 
+                                let newText = data ? data.split('\n').map((item, i) => <p key={i} style = {{ textAlign: 'center'}}>{item}</p>) : data
+                                return newText
+                            },
                             editComponent: props => (
                                 <TextField
                                     value={props.value}
@@ -157,6 +179,7 @@ class OnlineTable extends Component {
                                     rows = {1}
                                     fullWidth
                                     InputProps={{ disableUnderline: true, className: classes.textfield }}
+                                    style={{ textAlign: 'center'}}
                                     autoFocus
                                 />
                             ),
@@ -164,9 +187,12 @@ class OnlineTable extends Component {
                         {   title: 'Rating', 
                             field: 'rating', 
                             width: '7%',
+                            render: rowData => (
+                                <p style={{ textAlign: 'center' }}> {rowData.rating} </p>
+                            ),
                             editComponent: props => (
                                 <Select
-                                    value={props.value}
+                                    value={props.value || 1}
                                     onChange={e => props.onChange(e.target.value)}
                                     fullWidth
                                     disableUnderline
@@ -185,13 +211,17 @@ class OnlineTable extends Component {
                             field: 'customer_description',
                             width: '20%',
                             sorting: false,
+                            render: rowData => {
+                                let data = rowData.customer_description
+                                let newText = data ? data.split('\n').map((item, i) => <p key={i}>{item}</p>) : data
+                                return newText
+                            },
                             editComponent: props => (
                                 <TextField
                                     value={props.value}
                                     placeholder={'Customer Description'}
                                     onChange={e => props.onChange(e.target.value)}
-                                    rows={3}
-                                    rowsMax={6}
+                                    // rows={3}
                                     fullWidth
                                     multiline
                                     InputProps={{ disableUnderline: true, className: classes.textfield }}
@@ -202,13 +232,17 @@ class OnlineTable extends Component {
                             field: 'TPMC', 
                             width: "20%",
                             sorting: false,
+                            render: rowData => {
+                                let data = rowData.TPMC
+                                let newText = data ? data.split('\n').map((item, i) => <p key={i}>{item}</p>) : data
+                                return newText
+                            },
                             editComponent: props => (
                                 <TextField
                                     value={props.value}
                                     placeholder={'Tech, Product, Market, Company'}
                                     onChange={e => props.onChange(e.target.value)}
-                                    rows={3}
-                                    rowsMax={6}
+                                    // rows={3}
                                     fullWidth
                                     multiline
                                     InputProps={{ disableUnderline: true, className: classes.textfield }}                               
@@ -219,13 +253,17 @@ class OnlineTable extends Component {
                             field: 'leverage', 
                             width: '20%',
                             sorting: false,
+                            render: rowData => {
+                                let data = rowData.leverage
+                                let newText = data ? data.split('\n').map((item, i) => <p key={i}>{item}</p>) : data;
+                                return newText
+                            },
                             editComponent: props => (
                                 <TextField
                                     value={props.value}
                                     placeholder={'Customer Description'}
                                     onChange={e => props.onChange(e.target.value)}
-                                    rows={3}
-                                    rowsMax={6}
+                                    // rows={3}
                                     fullWidth
                                     multiline
                                     InputProps={{ disableUnderline: true, className: classes.textfield }}
@@ -236,13 +274,18 @@ class OnlineTable extends Component {
                             field: 'link', 
                             width: '10%',
                             sorting: false,
+                            render: rowData =>{
+                                const url = rowData.link ? (rowData.link.includes("https://") ? rowData.link : "https://" + rowData.link ) : rowData.link
+                                return (
+                                    <a href={url} target={"_blank"} className = {classes.hyperlink}>{rowData.link}</a> 
+                                )
+                            },
                             editComponent: props => (
                                 <TextField
                                     value={props.value}
                                     placeholder={'Sub/Link'}
                                     onChange={e => props.onChange(e.target.value)}
-                                    rows={3}
-                                    rowsMax={6}
+                                    // rows={3}
                                     fullWidth
                                     multiline
                                     InputProps={{ disableUnderline: true, className: classes.textfield }}
@@ -287,7 +330,7 @@ class OnlineTable extends Component {
                         Cell: props => < MTableCell {...props} style={{
                             margin: '0px',
                             padding: '10px',
-                            textAlign: 'center',
+                            // textAlign: 'center',
                             wordBreak: 'break-word',
                             hyphens: 'auto',
                         }} />,

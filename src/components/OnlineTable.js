@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import { withStyles } from "@material-ui/core/styles";
 import { withRouter } from "react-router";
 
-import { TextField, Paper, Select, MenuItem, Fade } from '@material-ui/core'
+import { TextField, Paper, Select, MenuItem, Fade, Chip } from '@material-ui/core'
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import tableIcons from '../styles/tableIcons'
 import MaterialTable, { MTableCell, MTableBodyRow, MTableEditRow, MTableToolbar } from 'material-table'
@@ -16,6 +16,8 @@ const styles = {
     // textField components for editRow cells
     textfield: {
         color: '#707070',
+        margin: '0px',
+        padding: '0px',
         "&:hover": {
             color: '#2B2B2B',
         },
@@ -29,6 +31,10 @@ const styles = {
         "&:hover": {
             color: '#2B2B2B',
         },
+    },
+    //autocomplete textfield for editRow cells
+    autocomplete_textfield: {
+        color: '#707070'
     },
     // rows (edit + normal)
     tableRow: {
@@ -103,7 +109,7 @@ class OnlineTable extends Component {
             let channelPromises = []
             
             snapshot.forEach((channelSnapShot) => {
-                channelPromises.push(firebase.database().ref('/channels/' + channelSnapShot.key).once('value'))
+                channelPromises.push(firebase.database().ref('/online_channels/' + channelSnapShot.key).once('value'))
             })
 
             await Promise.all(channelPromises).then((snapshots) => {
@@ -134,8 +140,8 @@ class OnlineTable extends Component {
                 categories: nextProps.categories,
                 isLoaded: false,
             }
-            // : cat_updated ? { categories: nextProps.categories } : null
-            : null
+            : cat_updated ? { categories: nextProps.categories } : null
+            // : null
     }
 
     componentDidUpdate(nextProps) {
@@ -145,7 +151,7 @@ class OnlineTable extends Component {
     }
 
     render() {
-        const { isLoaded, pathname, data } = this.state
+        const { isLoaded, pathname, data, chosenCategoryId, categories } = this.state
         const { classes } = this.props
 
         const title =  'Online User: '+ pathname  
@@ -154,7 +160,7 @@ class OnlineTable extends Component {
         if (data.length > 30) pageSizes.push(data.length)
 
         return (
-            <Fade in = {isLoaded}>
+            isLoaded ?
                 <MaterialTable
 
                     title = {title}
@@ -166,9 +172,10 @@ class OnlineTable extends Component {
                             field: 'channel', 
                             width: "10%",
                             sorting: false,
+                            cellStyle: { padding: '10px' },
                             render: rowData => {
                                 let data = rowData.channel 
-                                let newText = data ? data.split('\n').map((item, i) => <p key={i} style = {{ textAlign: 'center'}}>{item}</p>) : data
+                                let newText = data ? data.split('\n').map((item, i) => <p key={i} style = {{ textAlign: 'center', margin: '0px'}}>{item}</p>) : data
                                 return newText
                             },
                             editComponent: props => (
@@ -187,8 +194,9 @@ class OnlineTable extends Component {
                         {   title: 'Rating', 
                             field: 'rating', 
                             width: '7%',
+                            cellStyle: { padding: '10px' },
                             render: rowData => (
-                                <p style={{ textAlign: 'center' }}> {rowData.rating} </p>
+                                <p style={{ textAlign: 'center', margin: '0px' }}> {rowData.rating} </p>
                             ),
                             editComponent: props => (
                                 <Select
@@ -211,9 +219,10 @@ class OnlineTable extends Component {
                             field: 'customer_description',
                             width: '20%',
                             sorting: false,
+                            cellStyle: { padding: '10px' },
                             render: rowData => {
                                 let data = rowData.customer_description
-                                let newText = data ? data.split('\n').map((item, i) => <p key={i}>{item}</p>) : data
+                                let newText = data ? data.split('\n').map((item, i) => <p key={i} style={{ margin: '0px'}}>{item}</p>) : data
                                 return newText
                             },
                             editComponent: props => (
@@ -232,9 +241,10 @@ class OnlineTable extends Component {
                             field: 'TPMC', 
                             width: "20%",
                             sorting: false,
+                            cellStyle: { padding: '10px' },
                             render: rowData => {
                                 let data = rowData.TPMC
-                                let newText = data ? data.split('\n').map((item, i) => <p key={i}>{item}</p>) : data
+                                let newText = data ? data.split('\n').map((item, i) => <p key={i} style={{ margin: '0px' }}>{item}</p>) : data
                                 return newText
                             },
                             editComponent: props => (
@@ -253,9 +263,10 @@ class OnlineTable extends Component {
                             field: 'leverage', 
                             width: '20%',
                             sorting: false,
+                            cellStyle: { padding: '10px' },
                             render: rowData => {
                                 let data = rowData.leverage
-                                let newText = data ? data.split('\n').map((item, i) => <p key={i}>{item}</p>) : data;
+                                let newText = data ? data.split('\n').map((item, i) => <p key={i} style={{ margin: '0px' }}>{item}</p>) : data;
                                 return newText
                             },
                             editComponent: props => (
@@ -274,7 +285,8 @@ class OnlineTable extends Component {
                             field: 'link', 
                             width: '10%',
                             sorting: false,
-                            render: rowData =>{
+                            cellStyle: { padding: '10px' },
+                            render: rowData => {
                                 const url = rowData.link ? (rowData.link.includes("https://") ? rowData.link : "https://" + rowData.link ) : rowData.link
                                 return (
                                     <a href={url} target={"_blank"} className = {classes.hyperlink}>{rowData.link}</a> 
@@ -297,29 +309,59 @@ class OnlineTable extends Component {
                             field: 'categories',
                             width: '13%', 
                             sorting: false,
-                            editComponent: props => (
-                                // <TextField
-                                //     value={props.value}
-                                //     placeholder={'Categories'}
-                                //     onChange={e => props.onChange(e.target.value)}
-                                //     rows={3}
-                                //     rowsMax={6}
-                                //     fullWidth
-                                //     multiline
-                                //     InputProps={{ disableUnderline: true, className: classes.textfield }}
-                                // />
-                                <Autocomplete
+                            cellStyle: {padding: '5px'},
+                            render: rowData => {
+                                const fixedOption = categories.filter((option) => option.id === chosenCategoryId && option.user.toLowerCase() === pathname.toLowerCase())
+                                let value = rowData.categories ? [...fixedOption, ...rowData.categories.filter((option) => option.id !== chosenCategoryId || option.user.toLowerCase() !== pathname.toLowerCase())] : fixedOption 
+
+                                return value.map((category) => <Chip
+                                    size = "small"
+                                    label={"(" + category.user.substring(0, 1) + ") " + category.name}
+                                    style={{
+                                        margin: '2.5px',
+                                        backgroundColor: category.id === chosenCategoryId && category.user.toLowerCase() === pathname.toLowerCase() ? '#353B51' : '#F3F4F4',
+                                        color: category.id === chosenCategoryId && category.user.toLowerCase() === pathname.toLowerCase() ? '#FFFFFF' : '#707070',
+                                    }}
+                                />)
+                            },
+                            editComponent: props => {
+                                const fixedOption = categories.filter((option) => option.id === chosenCategoryId && option.user.toLowerCase() === pathname.toLowerCase())
+                                return <Autocomplete
+                                    autoHighlight
+                                    fullWidth
                                     multiple
-                                    options={this.state.categories}
-                                    // getOptionLabel={(option) => option.title}
-                                    defaultValue={[]}
+                                    size = "small"
+                                    
+                                    options={categories}
+                                    groupBy={(option) => option.user}
+                                    value={props.value ? [...fixedOption, ...props.value.filter((option) => option.id !== chosenCategoryId || option.user.toLowerCase() !== pathname.toLowerCase())] : fixedOption}
+                                    
+                                    onChange = {(event, value, reason) => {
+                                        let newValue = [...fixedOption, ...value.filter((option) => option.id !== chosenCategoryId || option.user.toLowerCase() !== pathname.toLowerCase())]
+                                        props.onChange(newValue)
+                                    }}
+
+                                    getOptionDisabled={(option) => option.id === chosenCategoryId && option.user.toLowerCase() === pathname.toLowerCase()} // Disables selecting that option
+                                    renderTags={(tagValue, getTagProps) =>
+                                        tagValue.map((option, index) => (
+                                            <Chip
+                                                label={"(" + option.user.substring(0, 1) + ") " + option.name}
+                                                {...getTagProps({ index })}
+                                                disabled={fixedOption.indexOf(option) !== -1}
+                                            />
+                                        ))
+                                    }
+
+                                    getOptionLabel={(option) => "("+option.user.substring(0,1) + ") "+ option.name} // Chip Label
+                                    renderOption = { (option) => option.name } // Option labels in list
                                     renderInput={(params) => (
                                         <TextField
                                             {...params}
+                                            InputProps={{ ...params.InputProps, disableUnderline: true }}
                                         />
                                     )}
                                 />
-                            ),
+                            }
                         },
                     ]}
 
@@ -397,24 +439,45 @@ class OnlineTable extends Component {
                         onRowAdd: newData =>
                             new Promise((resolve, reject) => {
                                 setTimeout(() => {
-                                    const { pathname, chosenCategoryId } = this.state
-                                    const channelsKey = firebase.database().ref('channels').push(newData).key;
+                                    const channelsKey = firebase.database().ref('online_channels').push(newData).key;
 
-                                    firebase.database().ref('Online/' + pathname + '/' + chosenCategoryId + '/'+ channelsKey).set(true)
+                                    // firebase.database().ref('Online/' + pathname + '/' + chosenCategoryId + '/'+ channelsKey).set(true)
+                                    const fixedOption = categories.filter((option) => option.id === chosenCategoryId && option.user.toLowerCase() === pathname.toLowerCase())
+                                    let additions = newData.categories ? [...fixedOption, ...newData.categories.filter((option) => option.id !== chosenCategoryId || option.user.toLowerCase() !== pathname.toLowerCase())] : fixedOption 
 
+                                    let categoryPromises = []
+                                    additions.forEach( (additional_category ) => {
+                                        categoryPromises.push(firebase.database().ref('Online/'+additional_category.user + '/' + additional_category.id + '/' + channelsKey).set(true))
+                                    })
+                                    Promise.all(categoryPromises)
                                     resolve();
                                 }, 1000);
                             }),
                         onRowUpdate: (newData, oldData) =>
                             new Promise((resolve, reject) => {
-                                setTimeout(() => {
-                                    
+                                setTimeout(async () => {
                                     const { data } = this.state
-                                    firebase.database().ref('channels/'+oldData.id).set(newData)
+                                    firebase.database().ref('online_channels/'+oldData.id).set(newData)
+
+                                    /* Loop through any new Categories added + deleted */
+                                    let newCategories = newData.categories
+                                    let oldCategories = oldData.categories || []
+
+                                    let promises = []
+                                    oldCategories.forEach((oldCategory) => {
+                                        let inNewList = newCategories.some((category) => category.user === oldCategory.user && category.id === oldCategory.id)
+                                        if (!inNewList){ 
+                                            promises.push(firebase.database().ref('Online/' + oldCategory.user + '/' + oldCategory.id + '/' + newData.id).remove())
+                                        }
+                                    })
+
+                                    newCategories.forEach((newCategory)=>{
+                                        promises.push(firebase.database().ref('Online/' + newCategory.user + '/' + newCategory.id + '/' + newData.id).set(true))
+                                    })
+                                    await Promise.all(promises)
                                     const foundIndex = data.findIndex(channel => channel.id === newData.id)
                                     data[foundIndex] = newData
-                                    this.setState({ data: data})
-                                    /* Loop through any new Categories added!! */
+                                    this.setState({ data: data })
                                     resolve();
                                 }, 1000)
                             }),
@@ -422,16 +485,26 @@ class OnlineTable extends Component {
                             new Promise((resolve, reject) => {
                                 setTimeout(() => {
                                     const { pathname, chosenCategoryId } = this.state
-                                    // if (oldData.categories.length === 1){ 
+                                    let promises = []
 
-                                    // }
-                                    firebase.database().ref('Online/' + pathname + '/' + chosenCategoryId + '/' + oldData.id).remove()
-                                    resolve()
+                                    if (oldData.categories.length === 1){ 
+                                        promises.push(firebase.database().ref('online_channels/' + oldData.id).remove());
+                                    } else {
+                                        const fixedOption = categories.filter((option) => option.id === chosenCategoryId && option.user.toLowerCase() === pathname.toLowerCase())
+                                        let reordered_oldcategories = oldData.categories ? [...fixedOption, ...oldData.categories.filter((option) => option.id !== chosenCategoryId || option.user.toLowerCase() !== pathname.toLowerCase())] : fixedOption 
+
+                                        promises.push(firebase.database().ref('online_channels/' + oldData.id + '/categories').set(reordered_oldcategories.slice(1)));
+                                    }
+
+                                    promises.push(firebase.database().ref('Online/' + pathname + '/' + chosenCategoryId + '/' + oldData.id).remove())
+
+                                    Promise.all(promises)
+                                    resolve();
                                 }, 1000)
                             }),
                     }}
                 />
-            </Fade> 
+            : null
         )
         
     }

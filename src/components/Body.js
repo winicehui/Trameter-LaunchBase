@@ -4,6 +4,7 @@ import ToolBar from './ToolBar'
 import OnlineTable from './OnlineTable'
 
 import { Fade } from '@material-ui/core'
+import users_list from '../static/Usertypes'
 
 import firebase from '../firebase'
 
@@ -24,9 +25,15 @@ class Body extends Component {
         const catRef = firebase.database().ref('/categories')
         catRef.on('value', (snapshot) => { // called each time order of categories changes
             let categories = [];
-            snapshot.forEach((categorySnapShot) => {
-                let category = categorySnapShot.val()
-                categories.push(category)
+            users_list.forEach((user) => {
+                snapshot.forEach((categorySnapShot) => {
+                    let newCategory = {
+                        name: categorySnapShot.val(),
+                        id: categorySnapShot.key,
+                        user: user
+                    }
+                    categories.push(newCategory)
+                })
             })
             this.setState({
                 categories: categories 
@@ -53,12 +60,13 @@ class Body extends Component {
                     { !chosenCategoryId 
                         ? null 
                         : web === 'Online' 
-                            ? <Fade in = {true}> 
+                            ? 
+                            // <Fade in = {true}> 
                                 <OnlineTable
                                     chosenCategoryId={chosenCategoryId}
                                     categories = {categories}
                                 />
-                        </Fade>
+                        // </Fade>
                             : null 
                     }
             </React.Fragment>

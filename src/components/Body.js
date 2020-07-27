@@ -2,8 +2,8 @@ import React, { Component } from 'react';
 
 import ToolBar from './ToolBar'
 import OnlineTable from './OnlineTable'
+import OfflineTable from './OfflineTable'
 
-import { Fade } from '@material-ui/core'
 import users_list from '../static/Usertypes'
 
 import firebase from '../firebase'
@@ -16,28 +16,25 @@ class Body extends Component {
             web: 'Online', 
 
             categories: [], 
-            isLoaded: false
+            isLoaded: false, 
         }
     }
 
     componentDidMount(){
-        console.log("componentDidMount")
         const catRef = firebase.database().ref('/categories')
         catRef.on('value', (snapshot) => { // called each time order of categories changes
             let categories = [];
             users_list.forEach((user) => {
                 snapshot.forEach((categorySnapShot) => {
                     let newCategory = {
-                        name: categorySnapShot.val(),
-                        id: categorySnapShot.key,
-                        user: user
+                        name: categorySnapShot.val(), // name of category
+                        id: categorySnapShot.key, // id of category
+                        user: user // user
                     }
                     categories.push(newCategory)
                 })
             })
-            this.setState({
-                categories: categories 
-            })
+            this.setState({ categories: categories })
         })
     }
 
@@ -60,14 +57,11 @@ class Body extends Component {
                     { !chosenCategoryId 
                         ? null 
                         : web === 'Online' 
-                            ? 
-                            // <Fade in = {true}> 
-                                <OnlineTable
-                                    chosenCategoryId={chosenCategoryId}
-                                    categories = {categories}
-                                />
-                        // </Fade>
-                            : null 
+                            ? <OnlineTable
+                                chosenCategoryId={chosenCategoryId}
+                                categories = {categories}
+                            />
+                            : <OfflineTable/>
                     }
             </React.Fragment>
         );

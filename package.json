@@ -11,10 +11,11 @@
     "@testing-library/user-event": "^7.2.1",
     "firebase": "^7.17.1",
     "firebase-tools": "^8.6.0",
-    "material-table": "^1.66.0",
+    "material-table": "^1.67.1",
     "react": "^16.13.1",
     "react-beautiful-dnd": "^13.0.0",
     "react-dom": "^16.13.1",
+    "react-linkify": "^1.0.0-alpha",
     "react-scripts": "3.4.1"
   },
   "scripts": {

@@ -113,6 +113,7 @@ class CategoryChip extends Component {
         const { classes } = this.props
         const width = category ?  (category.length + 1) * 8 + 'px' : '0px'
         return (
+            isLoaded ? 
             <Fade in = {isLoaded}>
                 <Draggable 
                     draggableId={id} 
@@ -156,7 +157,8 @@ class CategoryChip extends Component {
                         </div>
                     )}
                 </Draggable>
-            </Fade>
+                </Fade>
+                :null
         );
     }
 }

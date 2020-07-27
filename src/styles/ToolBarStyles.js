@@ -26,7 +26,7 @@ const styles = {
     Icon: {
         cursor: 'pointer',
         // height:'50px',
-        height: '65px',
+        // height: '65px',
         color: '#707070',
         "&:hover": {
             color: '#2B2B2B'
@@ -47,21 +47,21 @@ const styles = {
     // Left Toolbar Grid
     LeftToolbox: {
         borderRight: '1px solid #707070',
-        // height: '50px',
-        // padding: '10px',
-        height: '65px',
-        padding: '16px'
+        height: '50px',
+        padding: '10px',
+        // height: '65px',
+        // padding: '16px'
     }, 
     // Middle Toolbar Grid
     MiddleToolbox: {
         borderRight: '1px solid #707070',
-        // height: '50px',
-        height: '65px'
+        height: '50px',
+        // height: '65px'
     },
     // Right Toolbar Grid
     RightToolbox: {
-        // height: '50px',
-        height: '65px'
+        height: '50px',
+        // height: '65px'
     },   
 }
 

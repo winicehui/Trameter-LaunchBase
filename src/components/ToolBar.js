@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { withStyles } from "@material-ui/core/styles";
 import { withRouter } from "react-router";
 
-import { Grid, Select, MenuItem, Popover, TextField } from '@material-ui/core';
+import { Grid, Select, MenuItem, Popover, TextField, IconButton, Fade } from '@material-ui/core';
 import { DragDropContext, Droppable } from 'react-beautiful-dnd';
 import AddIcon from '@material-ui/icons/Add'
 import EditIcon from '@material-ui/icons/Edit'
@@ -249,13 +249,14 @@ class ToolBar extends Component {
                                 className = {classes.MiddleToolbox}
                                 >
                                 
-                                {/* {isLoaded ?  */}
+                                {isLoaded ? 
+                                    <Fade in = {isLoaded}>
                                     <Droppable droppableId = "categories" direction = "horizontal">
                                             {(provided, snapshot) => (
                                                 <div
                                                     style={{ 
                                                         display: 'flex', 
-                                                        overflowX: 'scroll', 
+                                                        overflowX: 'hidden', 
                                                         // flexWrap: edit ? 'wrap': 'nowrap', 
                                                         backgroundColor: !snapshot.isDraggingOver && !edit ? '#FFFFFF' : '#F2F3F4'
                                                     }}
@@ -279,8 +280,9 @@ class ToolBar extends Component {
                                                     {provided.placeholder}
                                                 </div>
                                             )}
-                                        </Droppable>   
-                                    {/* : null  */}
+                                        </Droppable>
+                                    </Fade>   
+                                   : null}
                             </Grid>
 
                             <Grid item 
@@ -296,15 +298,20 @@ class ToolBar extends Component {
                                     <Grid item align="center"
                                         xs = {6} 
                                     > 
-                                        {edit
-                                            ? <DoneIcon className ={classes.Icon} onClick={this.toggleEdit} />
-                                            : <EditIcon className={classes.Icon}  onClick={this.toggleEdit} />}
+                                        <IconButton onClick={this.toggleEdit}>
+                                            {edit
+                                                ? <DoneIcon className ={classes.Icon} />
+                                                : <EditIcon className={classes.Icon} />
+                                            }
+                                        </IconButton>
                                     </Grid>
                                     
-                                        <Grid item align="center"
-                                        xs={6}
+                                    <Grid item align="center"
+                                        xs={6}  
                                     > 
-                                        <AddIcon className={classes.Icon} onClick={this.togglePopper} aria-describedby={id} />
+                                        <IconButton onClick = {this.togglePopper}>
+                                            <AddIcon className={classes.Icon}  aria-describedby={id} />
+                                        </IconButton>
                                     </Grid>
                                 </Grid>
                                     

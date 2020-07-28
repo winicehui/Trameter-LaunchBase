@@ -9,6 +9,7 @@ body {
     'Droid Sans', Arial, Lucida Grande, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  scrollbar-width: '3px';
 }
 
 /* * {    
@@ -21,6 +22,14 @@ code {
     monospace;
 }
 
+::-webkit-scrollbar{
+    height: 8px;
+    width: 8px;
+    background: #F2F3F4;
+    border: 0px solid #707070
+}
 
-
-
+::-webkit-scrollbar-thumb:horizontal{
+    background: #707070;
+    border-radius: 15px;
+}

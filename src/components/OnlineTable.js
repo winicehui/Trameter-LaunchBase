@@ -28,7 +28,6 @@ class OnlineTable extends Component {
             data:[],
             isLoaded: false,
         }
-        this.toggleEditMode = this.toggleEditMode.bind(this)
     }
 
     // called when 1) pathname/user changes or 2) chosenCategory changes
@@ -76,7 +75,8 @@ class OnlineTable extends Component {
                 data: [],
                 isLoaded: false,
             }
-            : cat_updated ? { categories: nextProps.categories }  : null
+            : cat_updated ? { categories: nextProps.categories }  
+            : nextProps.editMode !== prevState.editMode ? { editMode: nextProps.editMode } : null 
             // : null
     }
 
@@ -84,11 +84,6 @@ class OnlineTable extends Component {
         if (this.state.isLoaded === false) {
             this.update()
         }
-    }
-
-    toggleEditMode = (e) =>{
-        const { editMode } = this.state
-        this.setState({ editMode: !editMode })
     }
 
     render() {
@@ -188,319 +183,277 @@ class OnlineTable extends Component {
         return (
             isLoaded ? 
                 <Fade in = {isLoaded}>
-                    <div> 
-                        <Switch
-                            checked={editMode}
-                            onChange={this.toggleEditMode}
-                            classes={{
-                                switchBase: classes.switchBase,
-                                checked: classes.checked, 
-                                track: classes.track
-                            }}
-                        />
-                        <MaterialTable
-                            title = {title}
-                            style={{ margin: '0px 30px' }}
-                            columns={[
-                                {   title: 'Channels', 
-                                    field: 'channel', 
-                                    width: "10%",
-                                    sorting: false,
-                                    cellStyle: { padding: '10px' },
-                                    render: rowData => {
-                                        let data = rowData.channel 
-                                        let newText = data ? data.split('\n').map((item, i) => <p key={i} style={{ textAlign: 'center', margin: '0px' }}>{item}</p>) : data
-                                        return newText
-                                    },
-                                    editComponent: props => (
-                                        <TextField
-                                            value={props.value}
-                                            placeholder={'Channel'}
-                                            onChange={e => props.onChange(e.target.value)}
-                                            rows = {1}
-                                            fullWidth
-                                            InputProps={{ disableUnderline: true, className: classes.textfield }}
-                                            style={{ textAlign: 'center'}}
-                                            autoFocus
-                                            helperText={'Required'}
-                                            error
-                                        />
-                                    ),
+                    <MaterialTable
+                        title = {title}
+                        style={{ margin: '0px 30px' }}
+                        columns={[
+                            {   title: 'Channels', 
+                                field: 'channel', 
+                                width: "10%",
+                                sorting: false,
+                                cellStyle: { padding: '10px' },
+                                render: rowData => {
+                                    let data = rowData.channel 
+                                    let newText = data ? data.split('\n').map((item, i) => <p key={i} style={{ textAlign: 'center', margin: '0px' }}>{item}</p>) : data
+                                    return newText
                                 },
-                                {   title: 'Rating', 
-                                    field: 'rating', 
-                                    width: '7%',
-                                    cellStyle: { padding: '10px' },
-                                    render: rowData => (
-                                        <p style={{ textAlign: 'center', margin: '0px' }}>{rowData.rating}</p>
-                                    ),
-                                    editComponent: props => (
-                                        <Select
-                                            value={props.value || 1}
-                                            onChange={e => props.onChange(e.target.value)}
-                                            fullWidth
-                                            disableUnderline
-                                            inputProps={{
-                                                classes: { select: classes.select }
-                                            }}
-                                        >
-                                            <MenuItem value={1}>1</MenuItem>
-                                            <MenuItem value={2}>2</MenuItem>
-                                            <MenuItem value={3}>3</MenuItem>
-                                        </Select>
-                                    ),
-                                },
-                                {   title: 'Customer Description',
-                                    field: 'customer_description',
-                                    width: '20%',
-                                    sorting: false,
-                                    cellStyle: { padding: '10px' },
-                                    render: rowData => {
-                                        let data = rowData.customer_description
-                                        let newText = data ? data.split('\n').map((item, i) => <Linkify componentDecorator={componentDecorator}> <p key={i} style={{ margin: '0px' }}>{item}</p> </Linkify>) : data
-                                        return newText
-                                    },
-                                    editComponent: props => (
-                                        <TextField
-                                            value={props.value}
-                                            placeholder={'Customer Description'}
-                                            onChange={e => props.onChange(e.target.value)}
-                                            fullWidth
-                                            multiline
-                                            InputProps={{ disableUnderline: true, className: classes.textfield }}
-                                        />
-                                    )
-                                },
-                                {   title: 'Tech, Product, Market, Company', 
-                                    field: 'TPMC', 
-                                    width: "20%",
-                                    sorting: false,
-                                    cellStyle: { padding: '10px' },
-                                    render: rowData => {
-                                        let data = rowData.TPMC
-                                        let newText = data ? data.split('\n').map((item, i) => <Linkify componentDecorator={componentDecorator}> <p key={i} style={{ margin: '0px' }}>{item}</p> </Linkify>) : data
-                                        return newText
-                                    },
-                                    editComponent: props => (
-                                        <TextField
-                                            value={props.value}
-                                            placeholder={'Tech, Product, Market, Company'}
-                                            onChange={e => props.onChange(e.target.value)}
-                                            fullWidth
-                                            multiline
-                                            InputProps={{ disableUnderline: true, className: classes.textfield }}                              
-                                        />
-                                    )
-                                },
-                                {   title: 'How to Leverage', 
-                                    field: 'leverage', 
-                                    width: '20%',
-                                    sorting: false,
-                                    cellStyle: { padding: '10px' },
-                                    render: rowData => {
-                                        let data = rowData.leverage
-                                        let newText = data ? data.split('\n').map((item, i) => <Linkify componentDecorator={componentDecorator}> <p key={i} style={{ margin: '0px' }}>{item}</p> </Linkify> ) : data;
-                                        return newText
-                                    },
-                                    editComponent: props => (
-                                        <TextField
-                                            value={props.value}
-                                            placeholder={'Customer Description'}
-                                            onChange={e => props.onChange(e.target.value)}
-                                            fullWidth
-                                            multiline
-                                            InputProps={{ disableUnderline: true, className: classes.textfield }}
-                                        />
-                                    )
-                                }, 
-                                {   title: 'Sub/Link', 
-                                    field: 'link', 
-                                    width: '10%',
-                                    sorting: false,
-                                    cellStyle: { padding: '10px' },
-                                    render: rowData => {
-                                        let data = rowData.link
-                                        let newText = data ? data.split('\n').map((item, i) => <Linkify componentDecorator={componentDecorator}> <p key={i} style={{ margin: '0px' }}>{item}</p> </Linkify>) : data;
-                                        return newText
-                                    },
-                                    editComponent: props => (
-                                        <TextField
-                                            value={props.value}
-                                            placeholder={'Sub/Link'}
-                                            onChange={e => props.onChange(e.target.value)}
-                                            fullWidth
-                                            multiline
-                                            InputProps={{ disableUnderline: true, className: classes.textfield }}
-                                        />
-                                    ),                            
-                                }, 
-                                {   title: 'Categories',
-                                    field: 'categories',
-                                    width: '13%', 
-                                    sorting: false,
-                                    cellStyle: { padding: '5px' },
-                                    render: rowData => {
-                                        const fixedOption = categories.filter((option) => option.id === chosenCategoryId && option.user.toLowerCase() === pathname.toLowerCase())
-                                        let value = rowData.categories ? [...fixedOption, ...rowData.categories.filter((option) => option.id !== chosenCategoryId || option.user.toLowerCase() !== pathname.toLowerCase())] : fixedOption 
-
-                                        return value.map((category) => 
-                                            <Chip
-                                                size = "small"
-                                                label={"(" + category.user.substring(0, 1) + ") " + category.name}
-                                                style={{
-                                                    margin: '2.5px',
-                                                    backgroundColor: category.id === chosenCategoryId && category.user.toLowerCase() === pathname.toLowerCase() ? '#353B51' : '#707070',
-                                                    color: category.id === chosenCategoryId && category.user.toLowerCase() === pathname.toLowerCase() ? '#FFFFFF' : '#FFFFFF',
-                                                }}
-                                                key = {category}
-                                            />
-                                        )
-                                    },
-                                    editComponent: props => {
-                                        const fixedOption = categories.filter((option) => option.id === chosenCategoryId && option.user.toLowerCase() === pathname.toLowerCase())
-                                        return <Autocomplete
-                                            autoHighlight
-                                            fullWidth
-                                            multiple
-                                            
-                                            options={categories}
-                                            groupBy={(option) => option.user}
-                                            value={props.value ? [...fixedOption, ...props.value.filter((option) => option.id !== chosenCategoryId || option.user.toLowerCase() !== pathname.toLowerCase())] : fixedOption}
-                                            
-                                            onChange = {(event, value, reason) => {
-                                                let newValue = [...fixedOption, ...value.filter((option) => option.id !== chosenCategoryId || option.user.toLowerCase() !== pathname.toLowerCase())]
-                                                props.onChange(newValue)
-                                            }}
-
-                                            getOptionDisabled={(option) => option.id === chosenCategoryId && option.user.toLowerCase() === pathname.toLowerCase()} // Disables selecting that option
-                                            renderTags={(tagValue, getTagProps) =>
-                                                tagValue.map((option, index) => (
-                                                    <Chip
-                                                        label={"(" + option.user.substring(0, 1) + ") " + option.name}
-                                                        {...getTagProps({ index })}
-                                                        disabled={fixedOption.indexOf(option) !== -1}
-                                                        size = "small"
-                                                    />
-                                                ))
-                                            }
-
-                                            getOptionLabel={(option) => "("+option.user.substring(0,1) + ") "+ option.name} // Chip Label
-                                            renderOption = { (option) => option.name } // Option labels in list
-                                            renderInput={(params) => (
-                                                <TextField
-                                                    {...params}
-                                                    InputProps={{ ...params.InputProps, disableUnderline: true }}
-                                                />
-                                            )}
-                                        />
-                                    }
-                                },
-                            ]}
-
-                            components={{
-                                Container: props => <Paper {...props} elevation={0} />,
-                                Cell: props => < MTableCell {...props} className = {classes.cell} />,
-                                EditRow: props => (
-                                    <MTableEditRow {...props} className={classes.tableRow} 
-                                        onKeyDown={(e) => {
-                                            if (e.keyCode === 27) {
-                                                props.onEditingCanceled(props.mode, props.data)
-                                            }
-                                        }} 
+                                editComponent: props => (
+                                    <TextField
+                                        value={props.value}
+                                        placeholder={'Channel'}
+                                        onChange={e => props.onChange(e.target.value)}
+                                        rows = {1}
+                                        fullWidth
+                                        InputProps={{ disableUnderline: true, className: classes.textfield }}
+                                        style={{ textAlign: 'center'}}
+                                        autoFocus
+                                        helperText={'Required'}
+                                        error
                                     />
                                 ),
-                                Row: props => (
-                                    <MTableBodyRow {...props} className={classes.tableRow} />
+                            },
+                            {   title: 'Rating', 
+                                field: 'rating', 
+                                width: '7%',
+                                cellStyle: { padding: '10px' },
+                                // defaultSort: 'desc',
+                                render: rowData => (
+                                    <p style={{ textAlign: 'center', margin: '0px' }}>{rowData.rating}</p>
                                 ),
-                                Action: props => <MyAction {...props} />,
-                                Toolbar: props => (
-                                    <div>
-                                        <div style = {{float: 'right'}}>
-                                            <p className = {classes.channel_count}> {data.length} </p>  
-                                            <Tooltip title= {!editMode ? "Turn ON Edit Mode" : "Turn OFF Edit Mode"} placement="bottom">
-                                                <div style = {{margin: '13px 0px 13px 0px', float: 'right'}}>
-                                                    <Switch
-                                                        checked={editMode}
-                                                        onChange={this.toggleEditMode}
-                                                        name="editMode"
-                                                        classes={{
-                                                            switchBase: classes.switchBase, 
-                                                            checked: classes.checked, 
-                                                            track: classes.track
-                                                        }}
-                                                    />
-                                                </div>
-                                            </Tooltip>
-                                        </div>
-                                        <MTableToolbar {...props} classes={{ root: classes.toolBar }}/>
-                                    </div>
-                                )
-                            }}
-
-                            icons={tableIcons}
-
-                            // actions={[
-                            //     {
-                            //         icon: ()=> {
-                            //             return <Switch
-                            //                 // checked={state.checkedA}
-                            //                 // onChange={handleChange}
-                            //                 name="checkedA"
-                            //                 inputProps={{ 'aria-label': 'secondary checkbox' }}
-                            //                 stlye={{ float: 'right' }}
-                            //             />
-                            //         },
-                            //         tooltip: "Turn On Editing",
-                            //         position: "toolbar",
-                            //         onClick: () => {
-                            //         },
-                            //     }
-                            // ]}
-
-                            data = {data}
-
-                            localization={{
-                                body: {
-                                    emptyDataSourceMessage: 'No channels to display.',
-                                    addTooltip: '',
-                                    deleteTooltip: '',
-                                    editTooltip: '',
-                                    editRow:{
-                                        deleteText: '\xa0\xa0Are you sure you want to delete this channel?'
-                                    }
+                                editComponent: props => (
+                                    <Select
+                                        value={props.value || 1}
+                                        onChange={e => props.onChange(e.target.value)}
+                                        fullWidth
+                                        disableUnderline
+                                        inputProps={{
+                                            classes: { select: classes.select }
+                                        }}
+                                    >
+                                        <MenuItem value={1}>1</MenuItem>
+                                        <MenuItem value={2}>2</MenuItem>
+                                        <MenuItem value={3}>3</MenuItem>
+                                    </Select>
+                                ),
+                            },
+                            {   title: 'Customer Description',
+                                field: 'customer_description',
+                                width: '20%',
+                                sorting: false,
+                                cellStyle: { padding: '10px' },
+                                render: rowData => {
+                                    let data = rowData.customer_description
+                                    let newText = data ? data.split('\n').map((item, i) => <Linkify componentDecorator={componentDecorator}> <p key={i} style={{ margin: '0px' }}>{item}</p> </Linkify>) : data
+                                    return newText
                                 },
-                                pagination: {
-                                    labelRowsSelect: 'channels',
-                                    labelRowsPerPage: 'Channels per page:'
+                                editComponent: props => (
+                                    <TextField
+                                        value={props.value}
+                                        placeholder={'Customer Description'}
+                                        onChange={e => props.onChange(e.target.value)}
+                                        fullWidth
+                                        multiline
+                                        InputProps={{ disableUnderline: true, className: classes.textfield }}
+                                    />
+                                )
+                            },
+                            {   title: 'Tech, Product, Market, Company', 
+                                field: 'TPMC', 
+                                width: "20%",
+                                sorting: false,
+                                cellStyle: { padding: '10px' },
+                                render: rowData => {
+                                    let data = rowData.TPMC
+                                    let newText = data ? data.split('\n').map((item, i) => <Linkify componentDecorator={componentDecorator}> <p key={i} style={{ margin: '0px' }}>{item}</p> </Linkify>) : data
+                                    return newText
+                                },
+                                editComponent: props => (
+                                    <TextField
+                                        value={props.value}
+                                        placeholder={'Tech, Product, Market, Company'}
+                                        onChange={e => props.onChange(e.target.value)}
+                                        fullWidth
+                                        multiline
+                                        InputProps={{ disableUnderline: true, className: classes.textfield }}                              
+                                    />
+                                )
+                            },
+                            {   title: 'How to Leverage', 
+                                field: 'leverage', 
+                                width: '20%',
+                                sorting: false,
+                                cellStyle: { padding: '10px' },
+                                render: rowData => {
+                                    let data = rowData.leverage
+                                    let newText = data ? data.split('\n').map((item, i) => <Linkify componentDecorator={componentDecorator}> <p key={i} style={{ margin: '0px' }}>{item}</p> </Linkify> ) : data;
+                                    return newText
+                                },
+                                editComponent: props => (
+                                    <TextField
+                                        value={props.value}
+                                        placeholder={'Customer Description'}
+                                        onChange={e => props.onChange(e.target.value)}
+                                        fullWidth
+                                        multiline
+                                        InputProps={{ disableUnderline: true, className: classes.textfield }}
+                                    />
+                                )
+                            }, 
+                            {   title: 'Sub/Link', 
+                                field: 'link', 
+                                width: '10%',
+                                sorting: false,
+                                cellStyle: { padding: '10px' },
+                                render: rowData => {
+                                    let data = rowData.link
+                                    let newText = data ? data.split('\n').map((item, i) => <Linkify componentDecorator={componentDecorator}> <p key={i} style={{ margin: '0px' }}>{item}</p> </Linkify>) : data;
+                                    return newText
+                                },
+                                editComponent: props => (
+                                    <TextField
+                                        value={props.value}
+                                        placeholder={'Sub/Link'}
+                                        onChange={e => props.onChange(e.target.value)}
+                                        fullWidth
+                                        multiline
+                                        InputProps={{ disableUnderline: true, className: classes.textfield }}
+                                    />
+                                ),                            
+                            }, 
+                            {   title: 'Categories',
+                                field: 'categories',
+                                width: '13%', 
+                                sorting: false,
+                                cellStyle: { padding: '5px' },
+                                render: rowData => {
+                                    const fixedOption = categories.filter((option) => option.id === chosenCategoryId && option.user.toLowerCase() === pathname.toLowerCase())
+                                    let value = rowData.categories ? [...fixedOption, ...rowData.categories.filter((option) => option.id !== chosenCategoryId || option.user.toLowerCase() !== pathname.toLowerCase())] : fixedOption 
+
+                                    return value.map((category) => 
+                                        <Chip
+                                            size = "small"
+                                            label={"(" + category.user.substring(0, 1) + ") " + category.name}
+                                            style={{
+                                                margin: '2.5px',
+                                                backgroundColor: category.id === chosenCategoryId && category.user.toLowerCase() === pathname.toLowerCase() ? '#353B51' : '#707070',
+                                                color: category.id === chosenCategoryId && category.user.toLowerCase() === pathname.toLowerCase() ? '#FFFFFF' : '#FFFFFF',
+                                            }}
+                                            key = {category}
+                                        />
+                                    )
+                                },
+                                editComponent: props => {
+                                    const fixedOption = categories.filter((option) => option.id === chosenCategoryId && option.user.toLowerCase() === pathname.toLowerCase())
+                                    return <Autocomplete
+                                        autoHighlight
+                                        fullWidth
+                                        multiple
+                                        
+                                        options={categories}
+                                        groupBy={(option) => option.user}
+                                        value={props.value ? [...fixedOption, ...props.value.filter((option) => option.id !== chosenCategoryId || option.user.toLowerCase() !== pathname.toLowerCase())] : fixedOption}
+                                        
+                                        onChange = {(event, value, reason) => {
+                                            let newValue = [...fixedOption, ...value.filter((option) => option.id !== chosenCategoryId || option.user.toLowerCase() !== pathname.toLowerCase())]
+                                            props.onChange(newValue)
+                                        }}
+
+                                        getOptionDisabled={(option) => option.id === chosenCategoryId && option.user.toLowerCase() === pathname.toLowerCase()} // Disables selecting that option
+                                        renderTags={(tagValue, getTagProps) =>
+                                            tagValue.map((option, index) => (
+                                                <Chip
+                                                    label={"(" + option.user.substring(0, 1) + ") " + option.name}
+                                                    {...getTagProps({ index })}
+                                                    disabled={fixedOption.indexOf(option) !== -1}
+                                                    size = "small"
+                                                />
+                                            ))
+                                        }
+
+                                        getOptionLabel={(option) => "("+option.user.substring(0,1) + ") "+ option.name} // Chip Label
+                                        renderOption = { (option) => option.name } // Option labels in list
+                                        renderInput={(params) => (
+                                            <TextField
+                                                {...params}
+                                                InputProps={{ ...params.InputProps, disableUnderline: true }}
+                                            />
+                                        )}
+                                    />
                                 }
-                            }}
+                            },
+                        ]}
 
-                            options={{  
-                                actionsCellStyle: { padding: '1px', margin: '0px' },
-                                emptyRowsWhenPaging: false,
-                                exportButton: true,
-                                exportFileName: title,
-                                headerStyle: {  backgroundColor: '#707070', 
-                                                color: '#FFFFFF', 
-                                                fontSize: '16px', 
-                                                padding:'10px', 
-                                                wordBreak: 'break-word', 
-                                                border: '1px solid black', 
-                                                textAlign: 'center' }, 
-                                loadingType: 'linear', 
-                                pageSize: 10, 
-                                pageSizeOptions: pageSizes,
-                                paginationType: 'stepped',
-                                search: false,
-                                tableLayout: 'fixed',
-                                showTitle: false, 
-                                toolbarButtonAlignment: 'left',
-                                draggable: false, 
-                            }}
+                        components={{
+                            Container: props => <Paper {...props} elevation={0} />,
+                            Cell: props => < MTableCell {...props} className = {classes.cell} />,
+                            EditRow: props => (
+                                <MTableEditRow {...props} className={classes.tableRow} 
+                                    onKeyDown={(e) => {
+                                        if (e.keyCode === 27) {
+                                            props.onEditingCanceled(props.mode, props.data)
+                                        }
+                                    }} 
+                                />
+                            ),
+                            Row: props => (
+                                <MTableBodyRow {...props} className={classes.tableRow} />
+                            ),
+                            Action: props => <MyAction {...props} />,
+                            Toolbar: props => (
+                                <div>
+                                    <div style = {{float: 'right'}}>
+                                        <p className = {classes.channel_count}> {data.length} </p>  
+                                    </div>
+                                    <MTableToolbar {...props} classes={{ root: classes.toolBar }}/>
+                                </div>
+                            )
+                        }}
 
-                            editable= {editable}
-                        />
-                    </div>
+                        icons={tableIcons}
+
+                        data = {data}
+
+                        localization={{
+                            body: {
+                                emptyDataSourceMessage: 'No channels to display.',
+                                addTooltip: '',
+                                deleteTooltip: '',
+                                editTooltip: '',
+                                editRow:{
+                                    deleteText: '\xa0\xa0Are you sure you want to delete this channel?'
+                                }
+                            },
+                            pagination: {
+                                labelRowsSelect: 'channels',
+                                labelRowsPerPage: 'Channels per page:'
+                            }
+                        }}
+
+                        options={{  
+                            actionsCellStyle: { padding: '1px', margin: '0px' },
+                            emptyRowsWhenPaging: false,
+                            exportButton: true,
+                            exportFileName: title,
+                            headerStyle: {  backgroundColor: '#707070', 
+                                            color: '#FFFFFF', 
+                                            fontSize: '16px', 
+                                            padding:'10px', 
+                                            wordBreak: 'break-word', 
+                                            border: '1px solid black', 
+                                            textAlign: 'center' }, 
+                            loadingType: 'linear', 
+                            pageSize: 10, 
+                            pageSizeOptions: pageSizes,
+                            paginationType: 'stepped',
+                            search: false,
+                            tableLayout: 'fixed',
+                            showTitle: false, 
+                            toolbarButtonAlignment: 'left',
+                            draggable: false, 
+                        }}
+
+                        editable= {editable}
+                    />
                 </Fade>
         : null
         )

@@ -24,7 +24,6 @@ class OfflineTable extends Component {
             data: [],
             isLoaded: false,
         }
-        this.toggleEditMode = this.toggleEditMode.bind(this)
     }
 
     // called when pathname/user changes 
@@ -67,18 +66,13 @@ class OfflineTable extends Component {
                 data: [],
                 isLoaded: false,
             }
-            : null
+            : nextProps.editMode !== prevState.editMode ? { editMode: nextProps.editMode } : null 
     }
 
     componentDidUpdate(nextProps) {
         if (this.state.isLoaded === false) {
             this.update()
         }
-    }
-
-    toggleEditMode = (e) => {
-        const { editMode } = this.state
-        this.setState({ editMode: !editMode })
     }
 
     render() {
@@ -144,198 +138,155 @@ class OfflineTable extends Component {
         return (
             isLoaded ?
                 <Fade in={isLoaded}>
-                    <div>
-                        <Switch
-                            checked={editMode}
-                            onChange={this.toggleEditMode}
-                            classes={{
-                                switchBase: classes.switchBase,
-                                checked: classes.checked,
-                                track: classes.track
-                            }}
-                        />
-                        <MaterialTable
-                            title={title}
-                            style={{ margin: '0px 30px' }}
-                            columns={[
-                                {
-                                    title: 'Channels',
-                                    field: 'channel',
-                                    width: "20%",
-                                    sorting: false,
-                                    cellStyle: { padding: '10px' },
-                                    render: rowData => {
-                                        let data = rowData.channel
-                                        let newText = data ? data.split('\n').map((item, i) => <p key={i} style={{ textAlign: 'center', margin: '0px' }}>{item}</p>) : data
-                                        return newText
-                                    },
-                                    editComponent: props => (
-                                        <TextField
-                                            value={props.value}
-                                            placeholder={'Channel'}
-                                            onChange={e => props.onChange(e.target.value)}
-                                            rows={1}
-                                            fullWidth
-                                            InputProps={{ disableUnderline: true, className: classes.textfield }}
-                                            style={{ textAlign: 'center' }}
-                                            autoFocus
-                                            helperText={'Required'}
-                                            error
-                                        />
-                                    ),
+                    <MaterialTable
+                        title={title}
+                        style={{ margin: '0px 30px' }}
+                        columns={[
+                            {
+                                title: 'Channels',
+                                field: 'channel',
+                                width: "20%",
+                                sorting: false,
+                                cellStyle: { padding: '10px' },
+                                render: rowData => {
+                                    let data = rowData.channel
+                                    let newText = data ? data.split('\n').map((item, i) => <p key={i} style={{ textAlign: 'center', margin: '0px' }}>{item}</p>) : data
+                                    return newText
                                 },
-                                {
-                                    title: 'Description',
-                                    field: 'description',
-                                    width: '60%',
-                                    sorting: false,
-                                    cellStyle: { padding: '10px' },
-                                    render: rowData => {
-                                        let data = rowData.description
-                                        let newText = data ? data.split('\n').map((item, i) => <Linkify componentDecorator={componentDecorator}> <p key={i} style={{ margin: '0px' }}>{item}</p> </Linkify>) : data
-                                        return newText
-                                    },
-                                    editComponent: props => (
-                                        <TextField
-                                            value={props.value}
-                                            placeholder={'Customer Description'}
-                                            onChange={e => props.onChange(e.target.value)}
-                                            fullWidth
-                                            multiline
-                                            InputProps={{ disableUnderline: true, className: classes.textfield }}
-                                        />
-                                    )
-                                },
-                                {
-                                    title: 'Sub/Link',
-                                    field: 'link',
-                                    width: '20%',
-                                    sorting: false,
-                                    cellStyle: { padding: '10px' },
-                                    render: rowData => {
-                                        let data = rowData.link
-                                        let newText = data ? data.split('\n').map((item, i) => <Linkify componentDecorator={componentDecorator}> <p key={i} style={{ margin: '0px' }}>{item}</p> </Linkify>) : data;
-                                        return newText
-                                    },
-                                    editComponent: props => (
-                                        <TextField
-                                            value={props.value}
-                                            placeholder={'Sub/Link'}
-                                            onChange={e => props.onChange(e.target.value)}
-                                            fullWidth
-                                            multiline
-                                            InputProps={{ disableUnderline: true, className: classes.textfield }}
-                                        />
-                                    ),
-                                },
-                            ]}
-
-                            components={{
-                                Container: props => <Paper {...props} elevation={0} />,
-                                Cell: props => < MTableCell {...props} className={classes.cell} />,
-                                EditRow: props => (
-                                    <MTableEditRow {...props} className={classes.tableRow}
-                                        onKeyDown={(e) => {
-                                            if (e.keyCode === 27) {
-                                                props.onEditingCanceled(props.mode, props.data)
-                                            }
-                                        }}
+                                editComponent: props => (
+                                    <TextField
+                                        value={props.value}
+                                        placeholder={'Channel'}
+                                        onChange={e => props.onChange(e.target.value)}
+                                        rows={1}
+                                        fullWidth
+                                        InputProps={{ disableUnderline: true, className: classes.textfield }}
+                                        style={{ textAlign: 'center' }}
+                                        autoFocus
+                                        helperText={'Required'}
+                                        error
                                     />
                                 ),
-                                Row: props => (
-                                    <MTableBodyRow {...props} className={classes.tableRow} />
-                                ),
-                                Action: props => <MyAction {...props} />,
-                                Toolbar: props => (
-                                    <div>
-                                        <div style={{ float: 'right' }}>
-                                            <p className={classes.channel_count}> {data.length} </p>
-                                            <Tooltip title={!editMode ? "Turn ON Edit Mode" : "Turn OFF Edit Mode"} placement="bottom">
-                                                <div style={{ margin: '13px 0px 13px 0px', float: 'right' }}>
-                                                    <Switch
-                                                        checked={editMode}
-                                                        onChange={this.toggleEditMode}
-                                                        name="editMode"
-                                                        classes={{
-                                                            switchBase: classes.switchBase,
-                                                            checked: classes.checked,
-                                                            track: classes.track
-                                                        }}
-                                                    />
-                                                </div>
-                                            </Tooltip>
-                                        </div>
-                                        <MTableToolbar {...props} classes={{ root: classes.toolBar }} />
-                                    </div>
+                            },
+                            {
+                                title: 'Description',
+                                field: 'description',
+                                width: '60%',
+                                sorting: false,
+                                cellStyle: { padding: '10px' },
+                                render: rowData => {
+                                    let data = rowData.description
+                                    let newText = data ? data.split('\n').map((item, i) => <Linkify componentDecorator={componentDecorator}> <p key={i} style={{ margin: '0px' }}>{item}</p> </Linkify>) : data
+                                    return newText
+                                },
+                                editComponent: props => (
+                                    <TextField
+                                        value={props.value}
+                                        placeholder={'Customer Description'}
+                                        onChange={e => props.onChange(e.target.value)}
+                                        fullWidth
+                                        multiline
+                                        InputProps={{ disableUnderline: true, className: classes.textfield }}
+                                    />
                                 )
-                            }}
-
-                            icons={tableIcons}
-
-                            // actions={[
-                            //     {
-                            //         icon: ()=> {
-                            //             return <Switch
-                            //                 // checked={state.checkedA}
-                            //                 // onChange={handleChange}
-                            //                 name="checkedA"
-                            //                 inputProps={{ 'aria-label': 'secondary checkbox' }}
-                            //                 stlye={{ float: 'right' }}
-                            //             />
-                            //         },
-                            //         tooltip: "Turn On Editing",
-                            //         position: "toolbar",
-                            //         onClick: () => {
-                            //         },
-                            //     }
-                            // ]}
-
-                            data={data}
-
-                            localization={{
-                                body: {
-                                    emptyDataSourceMessage: 'No channels to display.',
-                                    addTooltip: '',
-                                    deleteTooltip: '',
-                                    editTooltip: '',
-                                    editRow: {
-                                        deleteText: '\xa0\xa0Are you sure you want to delete this channel?'
-                                    }
+                            },
+                            {
+                                title: 'Sub/Link',
+                                field: 'link',
+                                width: '20%',
+                                sorting: false,
+                                cellStyle: { padding: '10px' },
+                                render: rowData => {
+                                    let data = rowData.link
+                                    let newText = data ? data.split('\n').map((item, i) => <Linkify componentDecorator={componentDecorator}> <p key={i} style={{ margin: '0px' }}>{item}</p> </Linkify>) : data;
+                                    return newText
                                 },
-                                pagination: {
-                                    labelRowsSelect: 'channels',
-                                    labelRowsPerPage: 'Channels per page:'
+                                editComponent: props => (
+                                    <TextField
+                                        value={props.value}
+                                        placeholder={'Sub/Link'}
+                                        onChange={e => props.onChange(e.target.value)}
+                                        fullWidth
+                                        multiline
+                                        InputProps={{ disableUnderline: true, className: classes.textfield }}
+                                    />
+                                ),
+                            },
+                        ]}
+
+                        components={{
+                            Container: props => <Paper {...props} elevation={0} />,
+                            Cell: props => < MTableCell {...props} className={classes.cell} />,
+                            EditRow: props => (
+                                <MTableEditRow {...props} className={classes.tableRow}
+                                    onKeyDown={(e) => {
+                                        if (e.keyCode === 27) {
+                                            props.onEditingCanceled(props.mode, props.data)
+                                        }
+                                    }}
+                                />
+                            ),
+                            Row: props => (
+                                <MTableBodyRow {...props} className={classes.tableRow} />
+                            ),
+                            Action: props => <MyAction {...props} />,
+                            Toolbar: props => (
+                                <div>
+                                    <div style={{ float: 'right' }}>
+                                        <p className={classes.channel_count}> {data.length} </p>
+                                    </div>
+                                    <MTableToolbar {...props} classes={{ root: classes.toolBar }} />
+                                </div>
+                            )
+                        }}
+
+                        icons={tableIcons}
+
+                        data={data}
+
+                        localization={{
+                            body: {
+                                emptyDataSourceMessage: 'No channels to display.',
+                                addTooltip: '',
+                                deleteTooltip: '',
+                                editTooltip: '',
+                                editRow: {
+                                    deleteText: '\xa0\xa0Are you sure you want to delete this channel?'
                                 }
-                            }}
+                            },
+                            pagination: {
+                                labelRowsSelect: 'channels',
+                                labelRowsPerPage: 'Channels per page:'
+                            }
+                        }}
 
-                            options={{
-                                actionsCellStyle: { padding: '1px', margin: '0px' },
-                                emptyRowsWhenPaging: false,
-                                exportButton: true,
-                                exportFileName: title,
-                                headerStyle: {
-                                    backgroundColor: '#707070',
-                                    color: '#FFFFFF',
-                                    fontSize: '16px',
-                                    padding: '10px',
-                                    wordBreak: 'break-word',
-                                    border: '1px solid black',
-                                    textAlign: 'center'
-                                },
-                                loadingType: 'linear',
-                                pageSize: 10,
-                                pageSizeOptions: pageSizes,
-                                paginationType: 'stepped',
-                                search: false,
-                                tableLayout: 'fixed',
-                                showTitle: false,
-                                toolbarButtonAlignment: 'left',
-                                draggable: false,
-                            }}
+                        options={{
+                            actionsCellStyle: { padding: '1px', margin: '0px' },
+                            emptyRowsWhenPaging: false,
+                            exportButton: true,
+                            exportFileName: title,
+                            headerStyle: {
+                                backgroundColor: '#707070',
+                                color: '#FFFFFF',
+                                fontSize: '16px',
+                                padding: '10px',
+                                wordBreak: 'break-word',
+                                border: '1px solid black',
+                                textAlign: 'center'
+                            },
+                            loadingType: 'linear',
+                            pageSize: 10,
+                            pageSizeOptions: pageSizes,
+                            paginationType: 'stepped',
+                            search: false,
+                            tableLayout: 'fixed',
+                            showTitle: false,
+                            toolbarButtonAlignment: 'left',
+                            draggable: false,
+                        }}
 
-                            editable={editable}
-                        />
-                    </div>
+                        editable={editable}
+                    />
                 </Fade>
                 : null
         )

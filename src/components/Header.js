@@ -7,6 +7,9 @@ import { withStyles } from "@material-ui/core/styles";
 import InputAdornment from '@material-ui/core/InputAdornment'
 import SearchIcon from '@material-ui/icons/Search';
 
+import OnlineCount from './OnlineCount'
+import OfflineCount from './OfflineCount'
+
 import users_list from '../static/Usertypes'
 
 import styles from '../styles/HeaderStyles'
@@ -48,7 +51,23 @@ class Header extends Component {
         const { classes } = this.props;
         return (
             <div className = "Header">
-                <h1 className="Title" onClick={this.onClick}> LaunchBase </h1>
+                <Grid container 
+                    alignItems = 'center'
+                    justify = 'center'>
+                        <Grid item xs={2}/>
+                        <Grid item xs={8} align="center">
+                            < h1 className="Title" onClick={this.onClick}> LaunchBase </h1>
+                        </Grid> 
+                        <Grid item xs={2}>
+                            <Grid container
+                                direction = "column"
+                                justify="center"
+                                alignItems="flex-end">
+                                    <OnlineCount />
+                                    <OfflineCount />
+                            </Grid>
+                        </Grid>
+                </Grid>
                 <Grid
                     container
                     alignItems='center'

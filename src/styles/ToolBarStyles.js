@@ -38,6 +38,13 @@ const styles = {
             color: '#2B2B2B'
         }
     },
+    //Button for Icons
+    Button: {
+        margin: '5px',
+        "&:hover": {
+            backgroundColor: '#F2F3F4',
+        }, 
+    },
     // Toolbar Grid
     Toolbox: {
         borderWidth: '0px 0px 1px 0px',
@@ -47,21 +54,17 @@ const styles = {
     // Left Toolbar Grid
     LeftToolbox: {
         borderRight: '1px solid #707070',
-        height: '50px',
-        padding: '10px',
-        // height: '65px',
-        // padding: '16px'
+        height: '58px',
+        padding: '14px',
     }, 
     // Middle Toolbar Grid
     MiddleToolbox: {
         borderRight: '1px solid #707070',
-        height: '50px',
-        // height: '65px'
+        height: '58px',
     },
     // Right Toolbar Grid
     RightToolbox: {
-        height: '50px',
-        // height: '65px'
+        height:'58px',
     },   
 }
 

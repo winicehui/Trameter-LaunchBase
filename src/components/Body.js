@@ -1,4 +1,6 @@
 import React, { Component } from 'react';
+import { withStyles } from "@material-ui/core/styles";
+import { Switch, Tooltip } from '@material-ui/core'
 
 import ToolBar from './ToolBar'
 import OnlineTable from './OnlineTable'
@@ -7,6 +9,7 @@ import OfflineTable from './OfflineTable'
 import users_list from '../static/Usertypes'
 
 import firebase from '../firebase'
+import styles from '../styles/TableStyles'
 
 class Body extends Component {
     constructor(props) {
@@ -15,9 +18,13 @@ class Body extends Component {
             chosenCategoryId: '',
             web: 'Online', 
 
+            editMode: false,
+
             categories: [], 
             isLoaded: false, 
         }
+
+        this.toggleEditMode = this.toggleEditMode.bind(this)
     }
 
     componentDidMount(){
@@ -46,8 +53,14 @@ class Body extends Component {
         this.setState({ web: web })
     }
 
+    toggleEditMode = (e) => {
+        const { editMode } = this.state
+        this.setState({ editMode: !editMode })
+    }
+
     render() {
-        const { chosenCategoryId, web, categories} = this.state
+        const { chosenCategoryId, web, categories, editMode } = this.state
+        const { classes } = this.props
         return (
             <React.Fragment> 
                     <ToolBar 
@@ -56,16 +69,33 @@ class Body extends Component {
                     />
                     { !chosenCategoryId 
                         ? null 
-                        : web === 'Online' 
-                            ? <OnlineTable
-                                chosenCategoryId={chosenCategoryId}
-                                categories = {categories}
-                            />
-                            : <OfflineTable/>
+                        : <div> 
+                            <Tooltip title={!editMode ? "Turn ON Edit Mode" : "Turn OFF Edit Mode"} placement="bottom">
+                                <Switch
+                                    checked={editMode}
+                                    onChange={this.toggleEditMode}
+                                    classes={{
+                                        switchBase: classes.switchBase,
+                                        checked: classes.checked,
+                                        track: classes.track
+                                    }}
+                                />
+                            </Tooltip>
+                                { web === 'Online' 
+                                    ? <OnlineTable
+                                        chosenCategoryId={chosenCategoryId}
+                                        categories = {categories}
+                                        editMode = {editMode}
+                                    />
+                                    : <OfflineTable
+                                        editMode={editMode}
+                                    />
+                                }
+                        </div> 
                     }
             </React.Fragment>
         );
     }
 }
 
-export default Body;
+export default withStyles(styles)(Body);

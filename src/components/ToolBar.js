@@ -34,6 +34,7 @@ class ToolBar extends Component {
 
             isLoaded: false // T/F condition for data (categoryIDs) loaded
         }
+        this.scroll = React.createRef()
         this.toggleOnOff = this.toggleOnOff.bind(this);
         this.toggleEdit = this.toggleEdit.bind(this);
 
@@ -75,7 +76,8 @@ class ToolBar extends Component {
         const newPathname = nextProps.location.pathname.substring(1) || users_list[0]
         // change state when pathname(user) changes
         return (newPathname.toLowerCase() !== prevState.pathname.toLowerCase())
-            ? { web: 'Online',
+            ? { 
+                // web: 'Online',
                 pathname: newPathname,
                 
                 categoryIDs: [],
@@ -184,6 +186,11 @@ class ToolBar extends Component {
                     newCategory: '',
                     chosenCategoryId: newCategoryKey
                 })
+
+                if (this.scroll) {
+                    this.scroll.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                };
+
                 this.props.handleToggleCategory(newCategoryKey)
             }
         }
@@ -247,8 +254,7 @@ class ToolBar extends Component {
                                 md = {8}
                                 lg = {10}
                                 className = {classes.MiddleToolbox}
-                                >
-                                
+                                >    
                                 {isLoaded ? 
                                     <Fade in = {isLoaded}>
                                     <Droppable droppableId = "categories" direction = "horizontal">
@@ -256,8 +262,7 @@ class ToolBar extends Component {
                                                 <div
                                                     style={{ 
                                                         display: 'flex', 
-                                                        overflowX: 'hidden', 
-                                                        // flexWrap: edit ? 'wrap': 'nowrap', 
+                                                        overflowX: 'scroll', 
                                                         backgroundColor: !snapshot.isDraggingOver && !edit ? '#FFFFFF' : '#F2F3F4'
                                                     }}
                                                     ref = {provided.innerRef}
@@ -277,12 +282,15 @@ class ToolBar extends Component {
                                                             /> 
                                                         )
                                                     )}
+                                                    <div ref = {this.scroll}> </div>
                                                     {provided.placeholder}
                                                 </div>
+                                                
                                             )}
                                         </Droppable>
                                     </Fade>   
                                    : null}
+                                
                             </Grid>
 
                             <Grid item 
@@ -298,7 +306,7 @@ class ToolBar extends Component {
                                     <Grid item align="center"
                                         xs = {6} 
                                     > 
-                                        <IconButton onClick={this.toggleEdit}>
+                                        <IconButton onClick={this.toggleEdit} className = {classes.Button}>
                                             {edit
                                                 ? <DoneIcon className ={classes.Icon} />
                                                 : <EditIcon className={classes.Icon} />
@@ -309,7 +317,7 @@ class ToolBar extends Component {
                                     <Grid item align="center"
                                         xs={6}  
                                     > 
-                                        <IconButton onClick = {this.togglePopper}>
+                                        <IconButton onClick={this.togglePopper} className={classes.Button}>
                                             <AddIcon className={classes.Icon}  aria-describedby={id} />
                                         </IconButton>
                                     </Grid>

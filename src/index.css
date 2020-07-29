@@ -33,3 +33,8 @@ code {
     background: #707070;
     border-radius: 15px;
 }
+
+::-webkit-scrollbar-thumb:vertical{
+    background: #707070;
+    border-radius: 15px;
+}

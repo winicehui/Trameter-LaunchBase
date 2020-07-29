@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import { withStyles } from "@material-ui/core/styles";
 import { withRouter } from "react-router";
 
-import { TextField, Paper, Select, MenuItem, Fade, Chip, Switch, Tooltip } from '@material-ui/core'
+import { TextField, Paper, Select, MenuItem, Fade, Chip } from '@material-ui/core'
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import MaterialTable, { MTableCell, MTableBodyRow, MTableEditRow, MTableToolbar } from 'material-table'
 import Linkify from 'react-linkify';

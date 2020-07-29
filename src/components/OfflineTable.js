@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import { withStyles } from "@material-ui/core/styles";
 import { withRouter } from "react-router";
 
-import { TextField, Paper, Fade, Switch, Tooltip } from '@material-ui/core'
+import { TextField, Paper, Fade } from '@material-ui/core'
 import MaterialTable, { MTableCell, MTableBodyRow, MTableEditRow, MTableToolbar } from 'material-table'
 import Linkify from 'react-linkify';
 
@@ -98,6 +98,7 @@ class OfflineTable extends Component {
                             if (!newData.channel) {
                                 return reject();
                             }
+                            newData['user'] = pathname
                             const channelsKey = firebase.database().ref('offline_channels').push(newData).key;
 
                             firebase.database().ref('Offline/' + pathname + '/' + channelsKey).set(true)

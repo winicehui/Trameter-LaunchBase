@@ -1,14 +1,12 @@
 import React, { Component } from 'react';
 import { withRouter } from "react-router";
 
-import { Grid, Button, TextField } from '@material-ui/core'
+import { Grid, Button } from '@material-ui/core'
 import { withStyles } from "@material-ui/core/styles";
-
-import InputAdornment from '@material-ui/core/InputAdornment'
-import SearchIcon from '@material-ui/icons/Search';
 
 import OnlineCount from './OnlineCount'
 import OfflineCount from './OfflineCount'
+import Search from './Search'
 
 import users_list from '../static/Usertypes'
 
@@ -89,7 +87,7 @@ class Header extends Component {
                     )}
 
                     <Grid item xs={7} sm={4} md={3} lg={2}>
-                        <TextField
+                        {/* <TextField
                             variant="outlined"
                             fullWidth
                             size="small"
@@ -105,7 +103,8 @@ class Header extends Component {
                             }}
                             // onChange={this.handleSearch}
                             // value={text}
-                        />
+                        /> */}
+                        <Search/>
                     </Grid>
                 </Grid>
             </div>

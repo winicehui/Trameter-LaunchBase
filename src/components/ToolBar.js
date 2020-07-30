@@ -171,7 +171,7 @@ class ToolBar extends Component {
                     newCategory: '' 
                 })
             } else {
-                let newCategoryKey = await firebase.database().ref('categories/').push(newCategory).key
+                let newCategoryKey = await firebase.database().ref('categories/').push(newCategory.trim()).key
                 let addCategoryPromises = []
 
                 users_list.forEach(user => {
@@ -269,7 +269,7 @@ class ToolBar extends Component {
                                                     {...provided.droppableProps}
                                                 >
                                                     {categoryIDs.map((element, i) =>
-                                                        (
+                                                        (<div> 
                                                             <CategoryChip 
                                                                 key = {element} 
                                                                 index = {i} 
@@ -280,6 +280,7 @@ class ToolBar extends Component {
                                                                 handleCategoryChange = {this.handleCategoryChange}
                                                                 handleDeleteCategory = {this.handleDeleteCategory}
                                                             /> 
+                                                            </div>
                                                         )
                                                     )}
                                                     <div ref = {this.scroll}> </div>
@@ -289,7 +290,7 @@ class ToolBar extends Component {
                                             )}
                                         </Droppable>
                                     </Fade>   
-                                   : null}
+                                : null}
                                 
                             </Grid>
 
@@ -358,6 +359,7 @@ class ToolBar extends Component {
                     /> }
                 </Grid>
             </DragDropContext>
+            
         );
     };
 };

@@ -32,7 +32,26 @@ const styles = {
             color: '#2B2B2B',
             backgroundColor: '#F2F3F4'
         }
-    }
+    }, 
+    // closeButton for Dialog
+    closeButton:{
+        float: 'right'
+    }, 
+    // deleteButton for Deleting Category
+    deleteButton: {
+        color: '#B31B1B',
+        borderColor: '#353B51', 
+        textTransform: 'none',
+        "&:hover": {
+            backgroundColor: '#F2F3F4',
+        },
+        "&:active": {
+            backgroundColor: '#F2F3F4',
+        },
+        "& .MuiTouchRipple-root span": {
+            backgroundColor: '#707070'
+        },
+    }, 
 }
 
 export default styles;

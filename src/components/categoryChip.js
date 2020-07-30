@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
 import { withStyles } from "@material-ui/core/styles";
 
-import { Chip , TextField, Fade } from '@material-ui/core';
+import { Chip, TextField, Fade, Dialog, DialogContentText, Button, DialogTitle, DialogContent, DialogActions, IconButton } from '@material-ui/core';
 import { Draggable } from 'react-beautiful-dnd';
 
+import CloseIcon from '@material-ui/icons/Close';
 import firebase from '../firebase'
 
 import styles from '../styles/categoryChipStyles'
@@ -20,6 +21,9 @@ class CategoryChip extends Component {
             edit: false, // T/F condition for toolbar editing setting
             textEdit: false, // T/F condition for chip editing
 
+            openDelete: false, 
+            deleteCategoryText: '',
+
             isLoaded: false, 
         }
         this.toggleCategory = this.toggleCategory.bind(this);
@@ -28,6 +32,9 @@ class CategoryChip extends Component {
         this.handleTextChange = this.handleTextChange.bind(this);
         this.onKeyPress = this.onKeyPress.bind(this);
         this.deleteCategory = this.deleteCategory.bind(this);
+
+        this.toggleDialog = this.toggleDialog.bind(this);
+        this.handleDeleteTextChange = this.handleDeleteTextChange.bind(this);
     }
 
     componentDidMount(){
@@ -61,21 +68,6 @@ class CategoryChip extends Component {
             : null
     }
 
-    // componentDidUpdate(nextProps) {
-    //     const { category, index } = this.state
-    //     if (this.state.isLoaded === false) {
-            // SEEMS IRRELEVANT -- SHOULD ASK IF YOU WOULD LIKE TO SAVE 
-            // if (category.length === 0) {
-            //     console.log("WOWOTOASDF")
-            //     this.props.handleDeleteCategory(index)
-            // }
-            // else if (this.props.category !== category){
-            //     this.props.handleCategoryChange(category, index)
-            // }
-    //         this.setState({ isLoaded: true })
-    //     }
-    // }
-    
     toggleCategory = (e, categoryId) => {
         this.props.handleToggleCategory(categoryId)
     }
@@ -102,14 +94,24 @@ class CategoryChip extends Component {
         }
     }
 
-    deleteCategory= (e) => {
-        alert("Deleting the category will delete all contents under this category for all users. Would you like to proceed?")
+    deleteCategory= async (e) => {
         const { index } = this.state
+        await this.setState({ openDelete: false })
         this.props.handleDeleteCategory(index)
     }
 
+    toggleDialog = (e) => {
+        const { openDelete } = this.state
+        this.setState({ openDelete: !openDelete, deleteCategoryText:'' })
+    }
+
+    handleDeleteTextChange = (e) =>{ 
+        const text = e.target.value
+        this.setState({ deleteCategoryText: text })
+    }
+
     render() {
-        const { index, id, category, chosenCategoryId, edit, textEdit, isLoaded  } = this.state
+        const { index, id, category, chosenCategoryId, edit, textEdit, isLoaded, openDelete, deleteCategoryText  } = this.state
         const { classes } = this.props
         const width = category ?  (category.length + 1) * 8 + 'px' : '0px'
         return (
@@ -126,21 +128,66 @@ class CategoryChip extends Component {
                             {...provided.draggableProps}
                         >
                             {!textEdit || !edit 
-                                ? <Chip
-                                    label={category}
-                                    variant={edit && chosenCategoryId !== id? "outlined" : "default"}
-                                    className = { chosenCategoryId === id ? classes.selectedButton : snapshot.isDragging ? classes.isDraggingButton : classes.Button }
-                                    style={{
-                                        margin: '9px 10px 9px 10px',
-                                        borderRadius: '8px',
-                                        fontSize: '17px',
-                                        cursor: 'pointer',
-                                        fontWeight: !snapshot.isDragging ? 'normal' : '500', 
-                                    }}
-                                    onClick={!edit ? (e) => { this.toggleCategory(e, id) } : this.toggleTextEdit}
-                                    onDelete={!edit ? undefined : this.deleteCategory}
-                                    {...provided.dragHandleProps}
-                                />
+                                    ? <div> 
+                                        <Chip
+                                            label={category}
+                                            variant={edit && chosenCategoryId !== id? "outlined" : "default"}
+                                            className = { chosenCategoryId === id ? classes.selectedButton : snapshot.isDragging ? classes.isDraggingButton : classes.Button }
+                                            style={{
+                                                margin: '9px 10px 9px 10px',
+                                                borderRadius: '8px',
+                                                fontSize: '17px',
+                                                cursor: 'pointer',
+                                                fontWeight: !snapshot.isDragging ? 'normal' : '500', 
+                                            }}
+                                            onClick={!edit ? (e) => { this.toggleCategory(e, id) } : this.toggleTextEdit}
+                                            onDelete={!edit ? undefined : this.toggleDialog}
+                                            {...provided.dragHandleProps}
+                                        />
+                                        <Dialog
+                                            open={openDelete}
+                                            onClose={this.toggleDialog}
+                                        >
+                                            <DialogTitle>
+                                                {"Are you absolutely sure?"} 
+                                                <IconButton aria-label="close" className={classes.closeButton} onClick={this.toggleDialog}>
+                                                    <CloseIcon />
+                                                </IconButton>
+                                            </DialogTitle>
+
+                                            <DialogContent>
+                                                <DialogContentText>
+                                                    <p style={{ backgroundColor: '#fdfd96', padding: '5px', margin: '0px', textAlign: 'center' }}> 
+                                                    Unexpected bad things will happen if you don't read this! 
+                                                    </p>
+                                                    <p> Deleting this category <b> cannot </b> be undone. Deleting this category will delete all channels listed under this category for <b> all </b> users. </p>
+                                                    <p> Please type <b> {category} </b> to confirm. </p>
+                                                </DialogContentText>
+                                                <TextField
+                                                    value = {deleteCategoryText}
+                                                    onChange = {this.handleDeleteTextChange}
+                                                    fullWidth
+                                                    variant="outlined"
+                                                    size= "small"
+                                                    autoFocus
+                                                >
+                                                </TextField> 
+                                            </DialogContent>
+
+                                            <DialogActions>
+                                                <Button 
+                                                    fullWidth 
+                                                    onClick={this.deleteCategory} 
+                                                    className = {classes.deleteButton} 
+                                                    variant = "outlined" 
+                                                    disabled = {category !== deleteCategoryText}
+                                                >
+                                                    I understand the consequences, delete this category.    
+                                                </Button>
+                                            </DialogActions>
+
+                                        </Dialog>
+                                     </div>
                                 : <TextField
                                     value={category}
                                     onChange={this.handleTextChange}

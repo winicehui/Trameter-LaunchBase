@@ -142,7 +142,7 @@ class ToolBar extends Component {
                 deletePromises.push(firebase.database().ref('/order/' + user).set(newCategoryIds))
             })
         })
-        await Promise.all(deletePromises)
+        Promise.all(deletePromises)
         if (deletedCategoryId === chosenCategoryId) {
             this.setState({ chosenCategoryId: categoryIDs[(index + 1)]})
             this.props.handleToggleCategory(categoryIDs[(index + 1)])

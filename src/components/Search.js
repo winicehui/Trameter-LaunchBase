@@ -92,10 +92,10 @@ class Search extends Component {
                 renderOption={(option) => 
                     <div> 
                         <div style = {{display: 'flex'}}>
-                            <p style = {{margin: '0px', fontSize: '16px'}}> {option.name} </p>
+                            <p style={{ margin: '0px', fontSize: '15px', color: '#353B51' }}> <b>{option.name}  </b> </p>
                             <Chip size="small" label={option.web} style={{ margin: '0px 4px', backgroundColor: option.web === "Online" ? '#b6bbcf' : '#bebebe'}}/>
                         </div>
-                        <p style={{ margin: '0px', fontSize: '14px' }}> {option.user + (option.category ? " / " + option.category : '')} </p>
+                        <p style={{ margin: '0px', fontSize: '13px', color: '#707070' }}> {option.user + (option.category ? " / " + option.category : '')} </p>
                     </div>
                 }
                 renderInput={(params) => (

@@ -291,7 +291,7 @@ class OnlineTable extends Component {
                                 editComponent: props => (
                                     <TextField
                                         value={props.value}
-                                        placeholder={'Customer Description'}
+                                        placeholder={'How to Leverage'}
                                         onChange={e => props.onChange(e.target.value)}
                                         fullWidth
                                         multiline

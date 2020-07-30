@@ -400,7 +400,7 @@ class OnlineTable extends Component {
                             ),
                             Action: props => <MyAction {...props} />,
                             Toolbar: props => (
-                                <div>
+                                <div style={{ position: 'sticky'}}>
                                     <div style = {{float: 'right'}}>
                                         <p className = {classes.channel_count}> {data.length} </p>  
                                     </div>
@@ -440,7 +440,10 @@ class OnlineTable extends Component {
                                             padding:'10px', 
                                             wordBreak: 'break-word', 
                                             border: '1px solid black', 
-                                            textAlign: 'center' }, 
+                                            textAlign: 'center', 
+                                            // position: 'sticky',
+                                            // top: 0 
+                                        }, 
                             loadingType: 'linear', 
                             pageSize: 10, 
                             pageSizeOptions: pageSizes,
@@ -450,6 +453,7 @@ class OnlineTable extends Component {
                             showTitle: false, 
                             toolbarButtonAlignment: 'left',
                             draggable: false, 
+                            // maxBodyHeight: '650px'
                         }}
 
                         editable= {editable}

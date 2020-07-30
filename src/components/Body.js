@@ -7,23 +7,20 @@ import OnlineTable from './OnlineTable'
 import OfflineTable from './OfflineTable'
 
 import users_list from '../static/Usertypes'
+import styles from '../styles/TableStyles'
 
 import firebase from '../firebase'
-import styles from '../styles/TableStyles'
 
 class Body extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            chosenCategoryId: '',
             web: 'Online', 
-
             editMode: false,
-
             categories: [], 
-            isLoaded: false, 
+            
+            showTable: false
         }
-
         this.toggleEditMode = this.toggleEditMode.bind(this)
     }
 
@@ -33,24 +30,31 @@ class Body extends Component {
             let categories = [];
             users_list.forEach((user) => {
                 snapshot.forEach((categorySnapShot) => {
-                    let newCategory = {
+                    categories.push({
                         name: categorySnapShot.val(), // name of category
                         id: categorySnapShot.key, // id of category
                         user: user // user
-                    }
-                    categories.push(newCategory)
+                    })
                 })
             })
             this.setState({ categories: categories })
         })
     }
 
-    handleToggleCategory = (categoryId) => {
-        this.setState({ chosenCategoryId: categoryId })
-    }
+    static getDerivedStateFromProps(nextProps, prevState) {
+        const web = nextProps.location.pathname.substring(1) || 'Online'
+        const params = new URLSearchParams(window.location.search)
+        const id = params.get('id') ? true : false 
+        const user = params.get('user')
+        let showTable = id
 
-    handleToggleWeb = (web) => {
-        this.setState({ web: web })
+        if (web === 'Online' && !id && !user){
+            
+        }
+        
+        return (web.toLowerCase() !== prevState.web.toLowerCase() || chosenCategoryId !== prevState.chosenCategoryId)
+            ? { web: web, chosenCategoryId: chosenCategoryId } 
+            : null
     }
 
     toggleEditMode = (e) => {
@@ -59,14 +63,11 @@ class Body extends Component {
     }
 
     render() {
-        const { chosenCategoryId, web, categories, editMode } = this.state
+        const { web, editMode, categories, chosenCategoryId } = this.state
         const { classes } = this.props
         return (
             <React.Fragment> 
-                    <ToolBar 
-                        handleToggleCategory = {this.handleToggleCategory} 
-                        handleToggleWeb = {this.handleToggleWeb}
-                    />
+                    <ToolBar />
                     { !chosenCategoryId 
                         ? null 
                         : <div> 
@@ -81,16 +82,15 @@ class Body extends Component {
                                     }}
                                 />
                             </Tooltip>
-                                { web === 'Online' 
+                                {/* { web === 'Online' 
                                     ? <OnlineTable
-                                        chosenCategoryId={chosenCategoryId}
                                         categories = {categories}
                                         editMode = {editMode}
                                     />
                                     : <OfflineTable
                                         editMode={editMode}
                                     />
-                                }
+                                } */}
                         </div> 
                     }
             </React.Fragment>

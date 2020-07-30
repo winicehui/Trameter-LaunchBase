@@ -11,20 +11,20 @@ import DoneIcon from '@material-ui/icons/Done'
 import CategoryChip from './categoryChip'
 
 import users_list from '../static/Usertypes'
+import styles from '../styles/ToolBarStyles'
 
 import firebase from '../firebase'
 
-import styles from '../styles/ToolBarStyles'
 
 class ToolBar extends Component {
     constructor(props) {
         super(props)
         this.state = {
             web: 'Online',  // 'Online' or 'Offline'
-            pathname: 'Enthusiasts', // indicates User
+            user: 'Enthusiasts', // indicates User
 
             categoryIDs: [], // list of categoryIDs of categories for specified User
-            chosenCategoryId: '-1', // categoryID of chosen Category
+            chosenCategoryId: null, // categoryID of chosen Category
 
             edit: false, // T/F condiition for editing in toolbar
 
@@ -51,8 +51,8 @@ class ToolBar extends Component {
 
     // called each time pathname/user changes
     update = () => {
-        const { pathname } = this.state
-        const orderRef = firebase.database().ref('/order/' + pathname)
+        const { user } = this.state
+        const orderRef = firebase.database().ref('/order/' + user)
         orderRef.on('value', (snapshot) => { // called each time order of categories changes
             const { chosenCategoryId, web } = this.state 
             let categoryIDs = snapshot.val() || [];
@@ -64,7 +64,6 @@ class ToolBar extends Component {
                 isLoaded: true
             })
             this.props.handleToggleCategory(newChosenCategoryId) // send back to parent component
-            this.props.handleToggleWeb(web) // send back to parent component (typically 'Online')
         })
     }
 
@@ -73,12 +72,14 @@ class ToolBar extends Component {
     }
 
     static getDerivedStateFromProps(nextProps, prevState) {
-        const newPathname = nextProps.location.pathname.substring(1) || users_list[0]
-        // change state when pathname(user) changes
-        return (newPathname.toLowerCase() !== prevState.pathname.toLowerCase())
+        const params = new URLSearchParams(nextProps.location.search)
+        const user = params.get('user') || users_list[0]
+
+        const web = this.props.location.pathname.substring(1) || 'Online'
+
+        return (user.toLowerCase() !== prevState.user.toLowerCase())
             ? { 
-                // web: 'Online',
-                pathname: newPathname,
+                user: user,
                 
                 categoryIDs: [],
                 chosenCategoryId: '-1',
@@ -91,7 +92,16 @@ class ToolBar extends Component {
 
                 isLoaded: false
             }
-            : null
+            : (web.toLowerCase() !== prevState.web.toLowerCase()) 
+                ? {
+                    web: web, 
+                    
+                    edit: false,
+
+                    anchorE1: null,
+                    openAdd: false,
+                    newCategory: ''
+                } : null
     }
 
     componentDidUpdate(nextProps) {

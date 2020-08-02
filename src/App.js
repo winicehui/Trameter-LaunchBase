@@ -24,7 +24,7 @@ class App extends Component {
           ContainerClassName="AnyClassForContainer"
           TransitionClassName="AnyClassForTransition"
         > 
-            <Fab color="secondary" size="medium" aria-label="scroll back to top">
+            <Fab style = {{backgroundColor: '#CC5F72', color: '#FFFFFF'}} size="medium" aria-label="scroll back to top">
               <KeyboardArrowUpIcon />
             </Fab>
         </ScrollUpButton>

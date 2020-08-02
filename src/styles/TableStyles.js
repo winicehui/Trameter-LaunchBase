@@ -22,6 +22,13 @@ const styles = {
     autocomplete_textfield: {
         color: '#707070'
     },
+    //autocomplete grouplabel for editRow cells
+    autocomplete_grouplabel: {
+        color: '#353B51',
+        backgroundColor: '#D6DADD', 
+        fontWeight: 'bolder',
+        fontSize: '17px',
+    },
     // rows (edit + normal)
     tableRow: {
         color: '#707070',

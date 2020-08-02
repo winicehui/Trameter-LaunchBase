@@ -230,7 +230,7 @@ class OnlineTable extends Component {
                                         value={props.value}
                                         placeholder={'Channel'}
                                         onChange={e => props.onChange(e.target.value)}
-                                        rows = {1}
+                                        multiline
                                         fullWidth
                                         InputProps={{ disableUnderline: true, className: classes.textfield }}
                                         style={{ textAlign: 'center'}}
@@ -271,7 +271,7 @@ class OnlineTable extends Component {
                                 cellStyle: { padding: '10px' },
                                 render: rowData => {
                                     let data = rowData.customer_description
-                                    let newText = data ? data.split('\n').map((item, i) => <Linkify componentDecorator={componentDecorator}> <p key={i} style={{ margin: '0px' }}>{item}</p> </Linkify>) : data
+                                    let newText = data ? data.split('\n').map((item, i) => <Linkify componentDecorator={componentDecorator} key={i}> <p style={{ margin: '0px' }}>{item}</p> </Linkify>) : data
                                     return newText
                                 },
                                 editComponent: props => (
@@ -292,7 +292,7 @@ class OnlineTable extends Component {
                                 cellStyle: { padding: '10px' },
                                 render: rowData => {
                                     let data = rowData.TPMC
-                                    let newText = data ? data.split('\n').map((item, i) => <Linkify componentDecorator={componentDecorator}> <p key={i} style={{ margin: '0px' }}>{item}</p> </Linkify>) : data
+                                    let newText = data ? data.split('\n').map((item, i) => <Linkify componentDecorator={componentDecorator} key={i}> <p style={{ margin: '0px' }}>{item}</p> </Linkify>) : data
                                     return newText
                                 },
                                 editComponent: props => (
@@ -313,7 +313,7 @@ class OnlineTable extends Component {
                                 cellStyle: { padding: '10px' },
                                 render: rowData => {
                                     let data = rowData.leverage
-                                    let newText = data ? data.split('\n').map((item, i) => <Linkify componentDecorator={componentDecorator}> <p key={i} style={{ margin: '0px' }}>{item}</p> </Linkify> ) : data;
+                                    let newText = data ? data.split('\n').map((item, i) => <Linkify componentDecorator={componentDecorator} key={i}> <p style={{ margin: '0px' }}>{item}</p> </Linkify> ) : data;
                                     return newText
                                 },
                                 editComponent: props => (
@@ -334,7 +334,7 @@ class OnlineTable extends Component {
                                 cellStyle: { padding: '10px' },
                                 render: rowData => {
                                     let data = rowData.link
-                                    let newText = data ? data.split('\n').map((item, i) => <Linkify componentDecorator={componentDecorator}> <p key={i} style={{ margin: '0px' }}>{item}</p> </Linkify>) : data;
+                                    let newText = data ? data.split('\n').map((item, i) => <Linkify componentDecorator={componentDecorator} key={i}> <p style={{ margin: '0px' }}>{item}</p> </Linkify>) : data;
                                     return newText
                                 },
                                 editComponent: props => (
@@ -366,7 +366,7 @@ class OnlineTable extends Component {
                                                 backgroundColor: category.id === chosenCategoryId && category.user.toLowerCase() === user.toLowerCase() ? '#353B51' : '#707070',
                                                 color: category.id === chosenCategoryId && category.user.toLowerCase() === user.toLowerCase() ? '#FFFFFF' : '#FFFFFF',
                                             }}
-                                            key = {category}
+                                            key = {[category.id, category.user]}
                                         />
                                     )
                                 },
@@ -394,6 +394,7 @@ class OnlineTable extends Component {
                                                     {...getTagProps({ index })}
                                                     disabled={fixedOption.indexOf(option) !== -1}
                                                     size = "small"
+                                                    key = {[option.id, option.user]}
                                                 />
                                             ))
                                         }
@@ -406,6 +407,8 @@ class OnlineTable extends Component {
                                                 InputProps={{ ...params.InputProps, disableUnderline: true }}
                                             />
                                         )}
+
+                                        classes={{ groupLabel: classes.autocomplete_grouplabel }}
                                     />
                                 }
                             },

@@ -9,22 +9,32 @@ import OfflineCount from './OfflineCount'
 import Search from './Search'
 
 import users_list from '../static/Usertypes'
-
 import styles from '../styles/HeaderStyles'
+
+import firebase from '../firebase'
 
 class Header extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            pathname: ''
+            user: ''
         }
         this.onClick = this.onClick.bind(this);
         this.toggleUser = this.toggleUser.bind(this);
     }
 
     componentDidMount(){
-        const pathname =  this.props.location.pathname.substring(1) || users_list[0]
-        this.setState({ pathname: pathname })
+        const params = new URLSearchParams(window.location.search)
+        const user = params.get('user') || users_list[0]
+        this.setState({ user: user })
+    }
+
+    static getDerivedStateFromProps(nextProps, prevState) {
+        const params = new URLSearchParams(nextProps.location.search)
+        const user = params.get('user') || users_list[0]
+        return (user.toLowerCase() !== prevState.user.toLowerCase())
+            ? { user: user }
+            : null
     }
     
     onClick() {
@@ -34,24 +44,39 @@ class Header extends Component {
     }    
 
     toggleUser = (user) => {
-        this.props.history.push({
-            pathname: '/'+ user
-        })
-    }    
+        const params = new URLSearchParams(window.location.search)
+        params.set('user', user)
 
-    static getDerivedStateFromProps(nextProps, prevState) {
-        return (nextProps.location.pathname.substring(1).toLowerCase() !== prevState.pathname.toLowerCase())
-            ? { pathname: nextProps.location.pathname.substring(1) || users_list[0] }
-            : null
+        const web = this.props.location.pathname.substring(1) || 'Online'
+        
+        if (web.toLowerCase() === 'Online'.toLowerCase()){
+            firebase.database().ref('/order/' + user).once('value').then((snapshot) => {
+                let firstCatId = snapshot.val() ? snapshot.val()[0] : null 
+                if (firstCatId) {
+                    params.set('id', firstCatId)
+                }
+                const url = '?' + params.toString()
+                this.props.history.push({
+                    search: url
+                })
+            })
+        } else {
+            const url = '?' + params.toString()
+            this.props.history.push({
+                search: url
+            })
+        }
     }
 
     render() {
         const { classes } = this.props;
+        const { user } = this.state
         return (
             <div className = "Header">
                 <Grid container 
                     alignItems = 'center'
-                    justify = 'center'>
+                    justify = 'center'
+                >
                         <Grid item xs={2}/>
                         <Grid item xs={8} align="center">
                             < h1 className="Title" onClick={this.onClick}> LaunchBase </h1>
@@ -66,6 +91,7 @@ class Header extends Component {
                             </Grid>
                         </Grid>
                 </Grid>
+
                 <Grid
                     container
                     alignItems='center'
@@ -75,9 +101,11 @@ class Header extends Component {
                     {users_list.map((element, i) =>
                         (<Grid item xs={7} sm={4} md={3} lg={2} key={i}>
                             <Button 
-                                className={ this.state.pathname.toLowerCase() === element.toLowerCase() 
+                                className={ 
+                                    user.toLowerCase() === element.toLowerCase() 
                                     ? classes.selectedbutton 
-                                    : classes.button} 
+                                    : classes.button
+                                } 
                                 fullWidth 
                                 onClick={() => this.toggleUser(element)}
                             > 
@@ -87,23 +115,6 @@ class Header extends Component {
                     )}
 
                     <Grid item xs={7} sm={4} md={3} lg={2}>
-                        {/* <TextField
-                            variant="outlined"
-                            fullWidth
-                            size="small"
-                            type="search"
-                            placeholder="Search"
-                            className={classes.search}
-                            InputProps={{
-                                startAdornment: (
-                                    <InputAdornment>
-                                        <SearchIcon />
-                                    </InputAdornment>
-                                ),
-                            }}
-                            // onChange={this.handleSearch}
-                            // value={text}
-                        /> */}
                         <Search/>
                     </Grid>
                 </Grid>

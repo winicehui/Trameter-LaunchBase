@@ -11,20 +11,21 @@ import DoneIcon from '@material-ui/icons/Done'
 import CategoryChip from './categoryChip'
 
 import users_list from '../static/Usertypes'
+import styles from '../styles/ToolBarStyles'
 
 import firebase from '../firebase'
 
-import styles from '../styles/ToolBarStyles'
 
 class ToolBar extends Component {
     constructor(props) {
         super(props)
         this.state = {
             web: 'Online',  // 'Online' or 'Offline'
-            pathname: 'Enthusiasts', // indicates User
+            user: 'Enthusiasts', // indicates User, 
+            params: null, 
 
             categoryIDs: [], // list of categoryIDs of categories for specified User
-            chosenCategoryId: '-1', // categoryID of chosen Category
+            chosenCategoryId: null, // categoryID of chosen Category
 
             edit: false, // T/F condiition for editing in toolbar
 
@@ -49,22 +50,21 @@ class ToolBar extends Component {
         this.onDragEnd = this.onDragEnd.bind(this);
     }
 
-    // called each time pathname/user changes
-    update = () => {
-        const { pathname } = this.state
-        const orderRef = firebase.database().ref('/order/' + pathname)
+    // called each time the user changes + when '/' path and user searchparam changes
+    update = async () => {
+        const { user } = this.state
+
+        const orderRef = firebase.database().ref('/order/' + user)
         orderRef.on('value', (snapshot) => { // called each time order of categories changes
-            const { chosenCategoryId, web } = this.state 
+            const { chosenCategoryId }= this.state 
+            const params = new URLSearchParams(window.location.search)
+            let emptypath = !this.props.location.pathname.substring(1) && !params.get('user') && !params.get('id')
             let categoryIDs = snapshot.val() || [];
-            // const newChosenCategoryId = !chosenCategoryId ? (categoryIDs ? categoryIDs[0] : '') : chosenCategoryId
-            const newChosenCategoryId = (chosenCategoryId === '-1') ? (categoryIDs ? categoryIDs[0] : '') : chosenCategoryId
             this.setState({
                 categoryIDs: categoryIDs, 
-                chosenCategoryId: newChosenCategoryId,
+                chosenCategoryId: (!chosenCategoryId && emptypath) ? (categoryIDs ? categoryIDs[0] : '') : chosenCategoryId,
                 isLoaded: true
             })
-            this.props.handleToggleCategory(newChosenCategoryId) // send back to parent component
-            this.props.handleToggleWeb(web) // send back to parent component (typically 'Online')
         })
     }
 
@@ -73,15 +73,25 @@ class ToolBar extends Component {
     }
 
     static getDerivedStateFromProps(nextProps, prevState) {
-        const newPathname = nextProps.location.pathname.substring(1) || users_list[0]
-        // change state when pathname(user) changes
-        return (newPathname.toLowerCase() !== prevState.pathname.toLowerCase())
+        const params = new URLSearchParams(nextProps.location.search)
+        const user = params.get('user') || users_list[0]
+        let id = params.get('id')
+        const web = nextProps.location.pathname.substring(1) || 'Online'
+
+        let emptypath = !nextProps.location.pathname.substring(1) && !params.get('user') && !params.get('id')
+
+        const oldparams = new URLSearchParams(prevState.params)
+        let user_param = params.get('user')
+        let old_userparam = oldparams.get('user')
+        
+        return (user.toLowerCase() !== prevState.user.toLowerCase() || (!user_param && old_userparam && emptypath))
             ? { 
-                // web: 'Online',
-                pathname: newPathname,
+                web: web, 
+                user: user,
+                params: params, 
                 
                 categoryIDs: [],
-                chosenCategoryId: '-1',
+                chosenCategoryId: id, 
 
                 edit: false,
 
@@ -91,7 +101,23 @@ class ToolBar extends Component {
 
                 isLoaded: false
             }
-            : null
+            : (web.toLowerCase() !== prevState.web.toLowerCase()) 
+                ? {
+                    web: web, 
+                    params: params, 
+                    
+                    edit: false,
+                    chosenCategoryId: prevState.chosenCategoryId ? prevState.chosenCategoryId : id, 
+
+                    anchorE1: null,
+                    openAdd: false,
+                    newCategory: ''
+                } : (id !== prevState.chosenCategoryId && !emptypath)
+                    ? {
+                        params: params, 
+                        chosenCategoryId: id,  
+                    }
+                    :  null
     }
 
     componentDidUpdate(nextProps) {
@@ -100,11 +126,31 @@ class ToolBar extends Component {
         }
     }
 
-    toggleOnOff = (e) => {
-        const { web } = this.state 
+    toggleOnOff = async (e) => {
+        const { web, user, chosenCategoryId } = this.state 
         const newWeb = (web === 'Online') ? 'Offline' : 'Online'
-        this.setState({ web: newWeb })
-        this.props.handleToggleWeb(newWeb)
+
+        const params = new URLSearchParams(window.location.search)
+        params.set('user', user)
+        if ( web === 'Online'){
+            params.delete('id')
+        } else {
+            if (!chosenCategoryId){
+                await firebase.database().ref('/order/' + user).once('value').then((snapshot) => {
+                    let firstCatId = snapshot.val() ? snapshot.val()[0] : null
+                    if (firstCatId) {
+                        params.set('id', firstCatId)
+                    }
+                })
+            } else {
+                params.set('id', chosenCategoryId)
+            }
+        }
+        const url = '?' + params.toString()
+        this.props.history.push({
+            pathname: newWeb,
+            search: url
+        })
     }
 
     toggleEdit = (e) => {
@@ -113,8 +159,15 @@ class ToolBar extends Component {
     }
 
     handleToggleCategory = (categoryId) => {
-        this.setState({ chosenCategoryId: categoryId })
-        this.props.handleToggleCategory(categoryId)
+        const { web, user } = this.state
+        const params = new URLSearchParams(window.location.search)
+        params.set('user', user)
+        params.set('id', categoryId)
+        const url = '?' + params.toString()
+        this.props.history.push({
+            pathname: web,
+            search: url
+        })
     }
 
     handleCategoryChange = (newCategoryName, index) => {
@@ -125,12 +178,12 @@ class ToolBar extends Component {
     }
 
     handleDeleteCategory = async (index) => {
-        const { categoryIDs, chosenCategoryId } = this.state
+        const { web, user, categoryIDs, chosenCategoryId } = this.state
         const deletedCategoryId = categoryIDs[index]
 
         firebase.database().ref('categories/' + deletedCategoryId).remove()
 
-        let deletePromises = []
+        let deletePromises = [] 
 
         users_list.forEach((user) => {
             const orderRef = firebase.database().ref('/order/' + user)
@@ -141,11 +194,30 @@ class ToolBar extends Component {
                 newCategoryIds.splice(i, 1)
                 deletePromises.push(firebase.database().ref('/order/' + user).set(newCategoryIds))
             })
+            const channelRef = firebase.database().ref('Online/' + user +'/' + deletedCategoryId)
+            channelRef.once('value', snapshot => {
+                snapshot.forEach((id) => {
+                    deletePromises.push(firebase.database().ref('online_channels/' + id.key).remove())
+                })
+            })
+            deletePromises.push(firebase.database().ref('Online/'+ user + '/' + deletedCategoryId).remove())
         })
-        Promise.all(deletePromises)
+        await Promise.all(deletePromises)
         if (deletedCategoryId === chosenCategoryId) {
-            this.setState({ chosenCategoryId: categoryIDs[(index + 1)]})
-            this.props.handleToggleCategory(categoryIDs[(index + 1)])
+            let newCategoryId = categoryIDs[(index +1 )]
+            const params = new URLSearchParams(window.location.search)
+            params.set('user', user)
+            if (newCategoryId) {
+                params.set('id', newCategoryId)
+            } else {
+                params.delete('id')
+            }
+            
+            const url = '?' + params.toString()
+            this.props.history.push({
+                pathname: web, 
+                search: url
+            })
         }
     }
 
@@ -163,7 +235,7 @@ class ToolBar extends Component {
 
     onKeyPress = async (e) => {
         if (e.key === 'Enter') {
-            const { newCategory, openAdd, categoryIDs } = this.state
+            const { web, user, categoryIDs, newCategory, openAdd } = this.state
             if (newCategory.length === 0) {
                 this.setState({ 
                     anchorE1: null, 
@@ -184,14 +256,21 @@ class ToolBar extends Component {
                     anchorE1: null,
                     openAdd: !openAdd,
                     newCategory: '',
-                    chosenCategoryId: newCategoryKey
+                })
+
+                const params = new URLSearchParams(window.location.search)
+                params.set('user', user)
+                params.set('id', newCategoryKey)
+               
+                const url = '?' + params.toString()
+                this.props.history.push({
+                    pathname: web, 
+                    search: url
                 })
 
                 if (this.scroll) {
                     this.scroll.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
                 };
-
-                this.props.handleToggleCategory(newCategoryKey)
             }
         }
     }
@@ -204,18 +283,26 @@ class ToolBar extends Component {
             destination.index === source.index)
         ) return;
 
-        const { categoryIDs, pathname } = this.state
+        const { web, user, categoryIDs, chosenCategoryId } = this.state
         const newCategories = Array.from(categoryIDs)
         newCategories.splice(source.index, 1);
         newCategories.splice(destination.index, 0, draggableId);
 
-        firebase.database().ref('/order/' + pathname).set(newCategories)
+        firebase.database().ref('/order/' + user).set(newCategories)
+    
+        const params = new URLSearchParams(window.location.search)
+        params.set('user', user)
+        params.set('id', chosenCategoryId)
+        const url = '?' + params.toString()
+        this.props.history.push({
+            pathname: web,
+            search: url
+        })
     }
 
     render() {
         const { classes } = this.props;
-        const { web, categoryIDs, chosenCategoryId, edit, anchorE1, openAdd, isLoaded, newCategory } = this.state
-
+        const { web, categoryIDs, chosenCategoryId, edit, anchorE1, openAdd, newCategory, isLoaded } = this.state
         const id = openAdd ? 'simple-popover' : undefined;
         return (
             <DragDropContext onDragEnd={this.onDragEnd}>
@@ -269,7 +356,7 @@ class ToolBar extends Component {
                                                     {...provided.droppableProps}
                                                 >
                                                     {categoryIDs.map((element, i) =>
-                                                        (<div> 
+                                                        (
                                                             <CategoryChip 
                                                                 key = {element} 
                                                                 index = {i} 
@@ -280,13 +367,11 @@ class ToolBar extends Component {
                                                                 handleCategoryChange = {this.handleCategoryChange}
                                                                 handleDeleteCategory = {this.handleDeleteCategory}
                                                             /> 
-                                                            </div>
                                                         )
                                                     )}
                                                     <div ref = {this.scroll}> </div>
                                                     {provided.placeholder}
-                                                </div>
-                                                
+                                                </div> 
                                             )}
                                         </Droppable>
                                     </Fade>   
@@ -359,7 +444,6 @@ class ToolBar extends Component {
                     /> }
                 </Grid>
             </DragDropContext>
-            
         );
     };
 };

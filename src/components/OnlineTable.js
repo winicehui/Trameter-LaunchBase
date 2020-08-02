@@ -18,10 +18,11 @@ class OnlineTable extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            pathname: 'Enthusiasts', // indicates the User
+            user: 'Enthusiasts', // indicates the User
+            params: null, 
 
             categories: [], // list of category names
-            chosenCategoryId: '-1', // chosenCategoryId
+            chosenCategoryId: null, // chosenCategoryId
 
             editMode: false,
 
@@ -30,11 +31,22 @@ class OnlineTable extends Component {
         }
     }
 
-    // called when 1) pathname/user changes or 2) chosenCategory changes
-    update() {
-        const { pathname, chosenCategoryId } = this.state
+    // called when 1) pathname/user changes or 2) chosenCategory changes or 3) "/"
+    async update() {
+        let { user, chosenCategoryId } = this.state
+        const params = new URLSearchParams(window.location.search)
+        let emptypath = !this.props.location.pathname.substring(1) && !params.get('user') && !params.get('id')
 
-        let channelIdsRef = firebase.database().ref('Online/' + pathname + '/' + chosenCategoryId)
+        if (!chosenCategoryId && emptypath){
+            await firebase.database().ref('/order/' + user).once('value').then((snapshot) => {
+                let firstCatId = snapshot.val() ? snapshot.val()[0] : null 
+                if (firstCatId) {
+                    chosenCategoryId = firstCatId
+                }
+            })
+        }
+
+        let channelIdsRef = firebase.database().ref('Online/' + user + '/' + chosenCategoryId)
         channelIdsRef.on('value', async (snapshot) => {
             let channels = []
             let channelPromises = []
@@ -50,7 +62,10 @@ class OnlineTable extends Component {
                     channels.push(channelDetails)
                 })
             })
-            this.setState({ data: channels, isLoaded: true })
+            this.setState({ data: channels, 
+                            isLoaded: true, 
+                            chosenCategoryId: chosenCategoryId
+            })
         })
     }
 
@@ -59,25 +74,35 @@ class OnlineTable extends Component {
     }
 
     static getDerivedStateFromProps(nextProps, prevState) {
-        const newPathname = nextProps.location.pathname.substring(1) || users_list[0]
+        const params = new URLSearchParams(nextProps.location.search)
+        const user = params.get('user') || users_list[0]
+        let id = params.get('id')
+
+        let emptypath = !nextProps.location.pathname.substring(1) && !params.get('user') && !params.get('id')
+
+        const oldparams = new URLSearchParams(prevState.params)
+        let user_param = params.get('user')
+        let old_userparam = oldparams.get('user')
+
         const cat_updated = nextProps.categories.sort().toString() !== prevState.categories.sort().toString()
 
-        return (newPathname.toLowerCase() !== prevState.pathname.toLowerCase() || 
-            nextProps.chosenCategoryId !== prevState.chosenCategoryId) 
+        return (user.toLowerCase() !== prevState.user.toLowerCase() || 
+                (!user_param && old_userparam && emptypath) || 
+                (id !== prevState.chosenCategoryId && !emptypath)) 
             ? {
-                pathname: newPathname, 
+                user: user, 
+                params: params,
 
                 categories: nextProps.categories,
-                chosenCategoryId: newPathname.toLowerCase() !== prevState.pathname.toLowerCase() ? -1 : nextProps.chosenCategoryId,
+                chosenCategoryId: id,
 
-                editMode: false,
+                editMode: nextProps.editMode,
 
                 data: [],
                 isLoaded: false,
             }
             : cat_updated ? { categories: nextProps.categories }  
             : nextProps.editMode !== prevState.editMode ? { editMode: nextProps.editMode } : null 
-            // : null
     }
 
     componentDidUpdate(nextProps) {
@@ -87,11 +112,14 @@ class OnlineTable extends Component {
     }
 
     render() {
-        const { pathname, categories, chosenCategoryId, editMode, data, isLoaded } = this.state
+        const { user, categories, chosenCategoryId, editMode, data, isLoaded } = this.state
         const { classes } = this.props
+        console.log(user)
+        console.log(chosenCategoryId)
+        console.log(data)
 
-        const tableInfo = categories.find((option) => option.id === chosenCategoryId && option.user.toLowerCase() === pathname.toLowerCase())
-        let title = 'Online User: ' + pathname + (tableInfo ? ', ' + tableInfo.name : '')
+        const tableInfo = categories.find((option) => option.id === chosenCategoryId && option.user.toLowerCase() === user.toLowerCase())
+        let title = 'Online User: ' + user + (tableInfo ? ', ' + tableInfo.name : '')
 
         let pageSizes = [10, 20, 30]
         if (data.length > 30) pageSizes.push(data.length)
@@ -110,8 +138,8 @@ class OnlineTable extends Component {
                             if (!newData.channel){
                                 return reject();
                             }
-                            const fixedOption = categories.filter((option) => option.id === chosenCategoryId && option.user.toLowerCase() === pathname.toLowerCase())
-                            let additions = newData.categories ? [...fixedOption, ...newData.categories.filter((option) => option.id !== chosenCategoryId || option.user.toLowerCase() !== pathname.toLowerCase())] : fixedOption
+                            const fixedOption = categories.filter((option) => option.id === chosenCategoryId && option.user.toLowerCase() === user.toLowerCase())
+                            let additions = newData.categories ? [...fixedOption, ...newData.categories.filter((option) => option.id !== chosenCategoryId || option.user.toLowerCase() !== user.toLowerCase())] : fixedOption
 
                             newData['categories'] = additions
                             const channelsKey = firebase.database().ref('online_channels').push(newData).key;
@@ -162,8 +190,8 @@ class OnlineTable extends Component {
                         setTimeout(() => {
                             let promises = []
 
-                            const fixedOption = categories.filter((option) => option.id === chosenCategoryId && option.user.toLowerCase() === pathname.toLowerCase())
-                            let reordered_oldcategories = [...fixedOption, ...oldData.categories.filter((option) => option.id !== chosenCategoryId || option.user.toLowerCase() !== pathname.toLowerCase())]
+                            const fixedOption = categories.filter((option) => option.id === chosenCategoryId && option.user.toLowerCase() === user.toLowerCase())
+                            let reordered_oldcategories = [...fixedOption, ...oldData.categories.filter((option) => option.id !== chosenCategoryId || option.user.toLowerCase() !== user.toLowerCase())]
 
                             if (reordered_oldcategories.length === 1) {
                                 promises.push(firebase.database().ref('online_channels/' + oldData.id).remove());
@@ -171,7 +199,7 @@ class OnlineTable extends Component {
                                 promises.push(firebase.database().ref('online_channels/' + oldData.id + '/categories').set(reordered_oldcategories.slice(1)));
                             }
 
-                            promises.push(firebase.database().ref('Online/' + pathname + '/' + chosenCategoryId + '/' + oldData.id).remove())
+                            promises.push(firebase.database().ref('Online/' + user + '/' + chosenCategoryId + '/' + oldData.id).remove())
 
                             Promise.all(promises)
                             resolve();
@@ -326,8 +354,8 @@ class OnlineTable extends Component {
                                 sorting: false,
                                 cellStyle: { padding: '5px' },
                                 render: rowData => {
-                                    const fixedOption = categories.filter((option) => option.id === chosenCategoryId && option.user.toLowerCase() === pathname.toLowerCase())
-                                    let value = rowData.categories ? [...fixedOption, ...rowData.categories.filter((option) => option.id !== chosenCategoryId || option.user.toLowerCase() !== pathname.toLowerCase())] : fixedOption 
+                                    const fixedOption = categories.filter((option) => option.id === chosenCategoryId && option.user.toLowerCase() === user.toLowerCase())
+                                    let value = rowData.categories ? [...fixedOption, ...rowData.categories.filter((option) => option.id !== chosenCategoryId || option.user.toLowerCase() !== user.toLowerCase())] : fixedOption 
 
                                     return value.map((category) => 
                                         <Chip
@@ -335,15 +363,15 @@ class OnlineTable extends Component {
                                             label={"(" + category.user.substring(0, 1) + ") " + category.name}
                                             style={{
                                                 margin: '2.5px',
-                                                backgroundColor: category.id === chosenCategoryId && category.user.toLowerCase() === pathname.toLowerCase() ? '#353B51' : '#707070',
-                                                color: category.id === chosenCategoryId && category.user.toLowerCase() === pathname.toLowerCase() ? '#FFFFFF' : '#FFFFFF',
+                                                backgroundColor: category.id === chosenCategoryId && category.user.toLowerCase() === user.toLowerCase() ? '#353B51' : '#707070',
+                                                color: category.id === chosenCategoryId && category.user.toLowerCase() === user.toLowerCase() ? '#FFFFFF' : '#FFFFFF',
                                             }}
                                             key = {category}
                                         />
                                     )
                                 },
                                 editComponent: props => {
-                                    const fixedOption = categories.filter((option) => option.id === chosenCategoryId && option.user.toLowerCase() === pathname.toLowerCase())
+                                    const fixedOption = categories.filter((option) => option.id === chosenCategoryId && option.user.toLowerCase() === user.toLowerCase())
                                     return <Autocomplete
                                         autoHighlight
                                         fullWidth
@@ -351,14 +379,14 @@ class OnlineTable extends Component {
                                         
                                         options={categories}
                                         groupBy={(option) => option.user}
-                                        value={props.value ? [...fixedOption, ...props.value.filter((option) => option.id !== chosenCategoryId || option.user.toLowerCase() !== pathname.toLowerCase())] : fixedOption}
+                                        value={props.value ? [...fixedOption, ...props.value.filter((option) => option.id !== chosenCategoryId || option.user.toLowerCase() !== user.toLowerCase())] : fixedOption}
                                         
                                         onChange = {(event, value, reason) => {
-                                            let newValue = [...fixedOption, ...value.filter((option) => option.id !== chosenCategoryId || option.user.toLowerCase() !== pathname.toLowerCase())]
+                                            let newValue = [...fixedOption, ...value.filter((option) => option.id !== chosenCategoryId || option.user.toLowerCase() !== user.toLowerCase())]
                                             props.onChange(newValue)
                                         }}
 
-                                        getOptionDisabled={(option) => option.id === chosenCategoryId && option.user.toLowerCase() === pathname.toLowerCase()} // Disables selecting that option
+                                        getOptionDisabled={(option) => option.id === chosenCategoryId && option.user.toLowerCase() === user.toLowerCase()} // Disables selecting that option
                                         renderTags={(tagValue, getTagProps) =>
                                             tagValue.map((option, index) => (
                                                 <Chip
@@ -400,7 +428,7 @@ class OnlineTable extends Component {
                             ),
                             Action: props => <MyAction {...props} />,
                             Toolbar: props => (
-                                <div>
+                                <div style={{ position: 'sticky'}}>
                                     <div style = {{float: 'right'}}>
                                         <p className = {classes.channel_count}> {data.length} </p>  
                                     </div>
@@ -440,7 +468,10 @@ class OnlineTable extends Component {
                                             padding:'10px', 
                                             wordBreak: 'break-word', 
                                             border: '1px solid black', 
-                                            textAlign: 'center' }, 
+                                            textAlign: 'center', 
+                                            // position: 'sticky',
+                                            // top: 0 
+                                        }, 
                             loadingType: 'linear', 
                             pageSize: 10, 
                             pageSizeOptions: pageSizes,
@@ -450,6 +481,7 @@ class OnlineTable extends Component {
                             showTitle: false, 
                             toolbarButtonAlignment: 'left',
                             draggable: false, 
+                            // maxBodyHeight: '650px'
                         }}
 
                         editable= {editable}

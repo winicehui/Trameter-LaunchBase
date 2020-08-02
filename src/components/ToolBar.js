@@ -203,7 +203,6 @@ class ToolBar extends Component {
             deletePromises.push(firebase.database().ref('Online/'+ user + '/' + deletedCategoryId).remove())
         })
         await Promise.all(deletePromises)
-
         if (deletedCategoryId === chosenCategoryId) {
             let newCategoryId = categoryIDs[(index +1 )]
             const params = new URLSearchParams(window.location.search)

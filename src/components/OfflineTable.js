@@ -17,7 +17,7 @@ class OfflineTable extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            pathname: 'Enthusiasts', // indicates the User
+            user: 'Enthusiasts', // indicates the User
 
             editMode: false,
 
@@ -28,9 +28,9 @@ class OfflineTable extends Component {
 
     // called when pathname/user changes 
     update() {
-        const { pathname } = this.state
+        const { user } = this.state
 
-        let channelIdsRef = firebase.database().ref('Offline/' + pathname)
+        let channelIdsRef = firebase.database().ref('Offline/' + user)
         channelIdsRef.on('value', async (snapshot) => {
             let channels = []
             let channelPromises = []
@@ -55,13 +55,14 @@ class OfflineTable extends Component {
     }
 
     static getDerivedStateFromProps(nextProps, prevState) {
-        const newPathname = nextProps.location.pathname.substring(1) || users_list[0]
+        const params = new URLSearchParams(nextProps.location.search)
+        const user = params.get('user') || users_list[0]
 
-        return (newPathname.toLowerCase() !== prevState.pathname.toLowerCase())
+        return (user.toLowerCase() !== prevState.user.toLowerCase())
             ? {
-                pathname: newPathname,
+                user: user,
 
-                editMode: false,
+                editMode: nextProps.editMode,
 
                 data: [],
                 isLoaded: false,
@@ -76,10 +77,11 @@ class OfflineTable extends Component {
     }
 
     render() {
-        const { pathname, editMode, data, isLoaded } = this.state
+        const { user, editMode, data, isLoaded } = this.state
         const { classes } = this.props
 
-        let title = 'Offline User: ' + pathname
+        console.log(user)
+        let title = 'Offline User: ' + user
 
         let pageSizes = [10, 20, 30]
         if (data.length > 30) pageSizes.push(data.length)
@@ -98,10 +100,10 @@ class OfflineTable extends Component {
                             if (!newData.channel) {
                                 return reject();
                             }
-                            newData['user'] = pathname
+                            newData['user'] = user
                             const channelsKey = firebase.database().ref('offline_channels').push(newData).key;
 
-                            firebase.database().ref('Offline/' + pathname + '/' + channelsKey).set(true)
+                            firebase.database().ref('Offline/' + user + '/' + channelsKey).set(true)
                 
                             return resolve();
                         }, 1000);
@@ -128,7 +130,7 @@ class OfflineTable extends Component {
                         setTimeout(() => {
                             firebase.database().ref('offline_channels/' + oldData.id).remove();
                             
-                            firebase.database().ref('Offline/' + pathname + '/' + oldData.id).remove();
+                            firebase.database().ref('Offline/' + user + '/' + oldData.id).remove();
 
                             resolve();
                         }, 1000)

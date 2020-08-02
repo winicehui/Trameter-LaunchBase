@@ -51,8 +51,10 @@ class Header extends Component {
         
         if (web.toLowerCase() === 'Online'.toLowerCase()){
             firebase.database().ref('/order/' + user).once('value').then((snapshot) => {
-                let firstCatId = snapshot.val()[0]
-                params.set('id', firstCatId)
+                let firstCatId = snapshot.val() ? snapshot.val()[0] : null 
+                if (firstCatId) {
+                    params.set('id', firstCatId)
+                }
                 const url = '?' + params.toString()
                 this.props.history.push({
                     search: url

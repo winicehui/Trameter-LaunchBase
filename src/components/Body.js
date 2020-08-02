@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { withRouter } from "react-router";
 import { withStyles } from "@material-ui/core/styles";
 import { Switch, Tooltip } from '@material-ui/core'
 
@@ -42,18 +43,14 @@ class Body extends Component {
     }
 
     static getDerivedStateFromProps(nextProps, prevState) {
-        const web = nextProps.location.pathname.substring(1) || 'Online'
+        const web = nextProps.location.pathname.substring(1)  || 'Online'
         const params = new URLSearchParams(window.location.search)
-        const id = params.get('id') ? true : false 
+        const id = params.get('id')
         const user = params.get('user')
-        let showTable = id
-
-        if (web === 'Online' && !id && !user){
-            
-        }
+        const showTable = (id && user && web === 'Online') || ((web === 'Online') && !id && !user) || (web === 'Offline') ? true : false 
         
-        return (web.toLowerCase() !== prevState.web.toLowerCase() || chosenCategoryId !== prevState.chosenCategoryId)
-            ? { web: web, chosenCategoryId: chosenCategoryId } 
+        return (web.toLowerCase() !== prevState.web.toLowerCase() || showTable !== prevState.showTable)
+            ? { web: web, showTable: showTable } 
             : null
     }
 
@@ -63,12 +60,12 @@ class Body extends Component {
     }
 
     render() {
-        const { web, editMode, categories, chosenCategoryId } = this.state
+        const { web, editMode, categories, showTable } = this.state
         const { classes } = this.props
         return (
             <React.Fragment> 
                     <ToolBar />
-                    { !chosenCategoryId 
+                    { !showTable 
                         ? null 
                         : <div> 
                             <Tooltip title={!editMode ? "Turn ON Edit Mode" : "Turn OFF Edit Mode"} placement="bottom">
@@ -82,7 +79,7 @@ class Body extends Component {
                                     }}
                                 />
                             </Tooltip>
-                                {/* { web === 'Online' 
+                                { web === 'Online' 
                                     ? <OnlineTable
                                         categories = {categories}
                                         editMode = {editMode}
@@ -90,7 +87,8 @@ class Body extends Component {
                                     : <OfflineTable
                                         editMode={editMode}
                                     />
-                                } */}
+                                    // :null 
+                                }
                         </div> 
                     }
             </React.Fragment>
@@ -98,4 +96,4 @@ class Body extends Component {
     }
 }
 
-export default withStyles(styles)(Body);
+export default withRouter(withStyles(styles)(Body));

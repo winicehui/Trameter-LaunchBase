@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { withRouter } from "react-router";
 import { TextField, InputAdornment } from '@material-ui/core';
 
 import Autocomplete from '@material-ui/lab/Autocomplete';
@@ -45,6 +46,7 @@ class Search extends Component {
                         name: channelObj.channel,
                         user: category.user,
                         category: category.name,
+                        id: category.id,
                         web: 'Online'
                     })
                 })
@@ -85,7 +87,21 @@ class Search extends Component {
                 // value={props.value ? [...fixedOption, ...props.value.filter((option) => option.id !== chosenCategoryId || option.user.toLowerCase() !== pathname.toLowerCase())] : fixedOption}
 
                 onChange={(event, value, reason) => {
-                    console.log(value)// watch the null valu 
+                    console.log(value)// watch the null value 
+                    if (value){
+                        const params = new URLSearchParams()
+                        params.set('user', value.user)
+                        if (value.web === 'Online'){
+                            if (value.id) {
+                                params.set('id', value.id)
+                            }
+                        }
+                        const url = '?' + params.toString()
+                        this.props.history.push({
+                            pathname: value.web === 'Online' ? 'Online' : 'Offline',
+                            search: url
+                        })
+                    }
                 }}
 
                 getOptionLabel={(option) => option.name}
@@ -126,4 +142,4 @@ class Search extends Component {
     }
 }
 
-export default withStyles(styles)(Search);
+export default withRouter(withStyles(styles)(Search));

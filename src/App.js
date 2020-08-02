@@ -19,7 +19,7 @@ class App extends Component {
     return (
       <div>
         <Header />
-        {/* <Body />
+        <Body />
         <ScrollUpButton 
           ContainerClassName="AnyClassForContainer"
           TransitionClassName="AnyClassForTransition"
@@ -27,7 +27,7 @@ class App extends Component {
             <Fab color="secondary" size="medium" aria-label="scroll back to top">
               <KeyboardArrowUpIcon />
             </Fab>
-        </ScrollUpButton> */}
+        </ScrollUpButton>
       </div>
     );
   }

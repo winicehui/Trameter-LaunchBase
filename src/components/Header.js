@@ -77,11 +77,14 @@ class Header extends Component {
                     alignItems = 'center'
                     justify = 'center'
                 >
-                        <Grid item xs={2}/>
+                        <Grid item xs={2} align = "left">
+                        <Button variant="contained" size="small" style={{ backgroundColor: '#F2F3F4', textTransform: 'none', color: '#353B51', float: 'left', margin: '0px' }}
+                            onClick={() => firebase.auth().signOut()}> Sign Out </Button>
+                        </Grid>
                         <Grid item xs={8} align="center">
                             < h1 className="Title" onClick={this.onClick}> LaunchBase </h1>
                         </Grid> 
-                        <Grid item xs={2}>
+                        <Grid item xs={2} align= "center">
                             <Grid container
                                 direction = "column"
                                 justify="center"

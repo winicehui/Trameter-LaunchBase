@@ -84,8 +84,7 @@ class Search extends Component {
                 onOpen={() => {
                     this.setOpen(true);
                 }}
-                // value={props.value ? [...fixedOption, ...props.value.filter((option) => option.id !== chosenCategoryId || option.user.toLowerCase() !== pathname.toLowerCase())] : fixedOption}
-
+                
                 onChange={(event, value, reason) => {
                     console.log(value)// watch the null value 
                     if (value){
@@ -108,10 +107,17 @@ class Search extends Component {
                 renderOption={(option) => 
                     <div> 
                         <div style = {{display: 'flex'}}>
-                            <p style={{ margin: '0px', fontSize: '15px', color: '#353B51' }}> <b>{option.name}  </b> </p>
-                            <Chip size="small" label={option.web} style={{ margin: '0px 4px', backgroundColor: option.web === "Online" ? '#b6bbcf' : '#bebebe'}}/>
+                            <p className = {classes.title}> <b>{option.name}  </b> </p>
+                            <Chip 
+                                size="small" 
+                                label={option.web} 
+                                style={{    
+                                    margin: '0px 4px', 
+                                    backgroundColor: option.web === "Online" ? '#b6bbcf' : '#bebebe'
+                                }}
+                            />
                         </div>
-                        <p style={{ margin: '0px', fontSize: '13px', color: '#707070' }}> {option.user + (option.category ? " / " + option.category : '')} </p>
+                        <p className = {classes.location}> {option.user + (option.category ? " / " + option.category : '')} </p>
                     </div>
                 }
                 renderInput={(params) => (

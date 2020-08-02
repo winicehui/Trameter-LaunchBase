@@ -35,6 +35,12 @@ const styles = {
             color: '#353B51'
         },
     },
+    // Online/Offline count
+    count: {
+        textAlign: 'right',
+        margin: '0px', 
+        color: '#FFFFFF'
+    }
 }
 
 export default styles;

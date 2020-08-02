@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
-
+import { withStyles } from "@material-ui/core/styles";
 import { Grid, Fade } from '@material-ui/core'
-
+import styles from '../styles/HeaderStyles'
 import firebase from '../firebase'
 
 class OfflineCount extends Component {
@@ -26,11 +26,12 @@ class OfflineCount extends Component {
 
     render() {
         const { numOnlineChannels, isLoaded } = this.state
+        const { classes } = this.props
         return (
             isLoaded ? 
                 <Fade in = {isLoaded}>
                     <Grid item xs={12}>
-                        <h4 style={{ textAlign: 'right', margin: '0px', color: '#FFFFFF' }}> Offline Total: {numOnlineChannels} </h4>
+                        <h4 className={classes.count}> Offline Total: {numOnlineChannels} </h4>
                     </Grid>
                 </Fade>
             : null 
@@ -38,4 +39,4 @@ class OfflineCount extends Component {
     }
 }
 
-export default OfflineCount;
+export default withStyles(styles)(OfflineCount);

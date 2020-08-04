@@ -86,7 +86,6 @@ class Search extends Component {
                 }}
                 
                 onChange={(event, value, reason) => {
-                    console.log(value)// watch the null value 
                     if (value){
                         const params = new URLSearchParams()
                         params.set('user', value.user)

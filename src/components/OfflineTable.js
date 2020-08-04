@@ -80,7 +80,6 @@ class OfflineTable extends Component {
         const { user, editMode, data, isLoaded } = this.state
         const { classes } = this.props
 
-        console.log(user)
         let title = 'Offline User: ' + user
 
         let pageSizes = [10, 20, 30]

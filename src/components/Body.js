@@ -7,7 +7,6 @@ import ToolBar from './ToolBar'
 import OnlineTable from './OnlineTable'
 import OfflineTable from './OfflineTable'
 
-import users_list from '../static/Usertypes'
 import styles from '../styles/TableStyles'
 
 import firebase from '../firebase'
@@ -18,7 +17,7 @@ class Body extends Component {
         this.state = {
             web: 'Online', 
             editMode: false,
-            categories: [], 
+            authorizedUsers: [],
             
             showTable: false
         }
@@ -26,19 +25,9 @@ class Body extends Component {
     }
 
     componentDidMount(){
-        const catRef = firebase.database().ref('/categories')
-        catRef.on('value', (snapshot) => { // called each time order of categories changes
-            let categories = [];
-            users_list.forEach((user) => {
-                snapshot.forEach((categorySnapShot) => {
-                    categories.push({
-                        name: categorySnapShot.val(), // name of category
-                        id: categorySnapShot.key, // id of category
-                        user: user // user
-                    })
-                })
-            })
-            this.setState({ categories: categories })
+        firebase.database().ref('authorizedEmails').on('value', (snapshot) => {
+            let authorizedUsers = snapshot.val()
+            this.setState({ authorizedUsers: authorizedUsers })
         })
     }
 
@@ -60,14 +49,18 @@ class Body extends Component {
     }
 
     render() {
-        const { web, editMode, categories, showTable } = this.state
+        const { web, editMode, authorizedUsers, showTable } = this.state
         const { classes } = this.props
+
+        let canEdit = authorizedUsers.includes(firebase.auth().currentUser.email)
+
         return (
             <React.Fragment> 
                     <ToolBar />
                     { !showTable 
                         ? null 
                         : <div> 
+                            {canEdit ? 
                             <Tooltip title={!editMode ? "Turn ON Edit Mode" : "Turn OFF Edit Mode"} placement="bottom">
                                 <Switch
                                     checked={editMode}
@@ -79,9 +72,9 @@ class Body extends Component {
                                     }}
                                 />
                             </Tooltip>
+                            : null}
                                 { web === 'Online' 
                                     ? <OnlineTable
-                                        categories = {categories}
                                         editMode = {editMode}
                                     />
                                     : <OfflineTable

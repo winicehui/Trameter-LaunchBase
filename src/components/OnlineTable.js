@@ -45,6 +45,18 @@ class OnlineTable extends Component {
                 }
             })
         }
+        let categories = [];
+        await firebase.database().ref('/categories').once('value', (snapshot) => { // called each time order of categories changes
+            users_list.forEach((user) => {
+                snapshot.forEach((categorySnapShot) => {
+                    categories.push({
+                        name: categorySnapShot.val(), // name of category
+                        id: categorySnapShot.key, // id of category
+                        user: user // user
+                    })
+                })
+            })
+        })
 
         let channelIdsRef = firebase.database().ref('Online/' + user + '/' + chosenCategoryId)
         channelIdsRef.on('value', async (snapshot) => {
@@ -64,6 +76,7 @@ class OnlineTable extends Component {
             })
             this.setState({ data: channels, 
                             isLoaded: true, 
+                            categories: categories, 
                             chosenCategoryId: chosenCategoryId
             })
         })
@@ -84,8 +97,6 @@ class OnlineTable extends Component {
         let user_param = params.get('user')
         let old_userparam = oldparams.get('user')
 
-        const cat_updated = nextProps.categories.sort().toString() !== prevState.categories.sort().toString()
-
         return (user.toLowerCase() !== prevState.user.toLowerCase() || 
                 (!user_param && old_userparam && emptypath) || 
                 (id !== prevState.chosenCategoryId && !emptypath)) 
@@ -93,7 +104,6 @@ class OnlineTable extends Component {
                 user: user, 
                 params: params,
 
-                categories: nextProps.categories,
                 chosenCategoryId: id,
 
                 editMode: nextProps.editMode,
@@ -101,7 +111,6 @@ class OnlineTable extends Component {
                 data: [],
                 isLoaded: false,
             }
-            : cat_updated ? { categories: nextProps.categories }  
             : nextProps.editMode !== prevState.editMode ? { editMode: nextProps.editMode } : null 
     }
 
@@ -114,9 +123,6 @@ class OnlineTable extends Component {
     render() {
         const { user, categories, chosenCategoryId, editMode, data, isLoaded } = this.state
         const { classes } = this.props
-        console.log(user)
-        console.log(chosenCategoryId)
-        console.log(data)
 
         const tableInfo = categories.find((option) => option.id === chosenCategoryId && option.user.toLowerCase() === user.toLowerCase())
         let title = 'Online User: ' + user + (tableInfo ? ', ' + tableInfo.name : '')

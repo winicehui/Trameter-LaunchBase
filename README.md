@@ -1,11 +1,24 @@
 # Trameter - Launch Base Web Application
-Developing a powerful internal tool to house channels identified for Trameter's launch
+Developing a powerful internal tool to house the information of numerous market channels that have been identified for Trameter's launch. 
 
 ### Online
 Firebase Hosting URL:
 ```
 https://launchbase-581e0.firebaseapp.com/
 ```
+## Terminology
+* Market Segment (Ex: 'Enthusiasts'): A group of people who share one or more common characteristics, lumped together for marketing purposes. 
+* Market Channel (Ex: 'Phocus Wire'): A route or way to market product and services that consumers and business buyers purchase
+* Channel Category (Ex: 'Travel Websites') : A class of market channels regarded to have shared characteristics 
+
+## Functionalities (see Video Below for more information)
+* CRUD operations (Add, Edit, Delete, Reorder channel categories; Add, Edit, Delete Channels)
+* Real time updates (with Firebase)
+* Sorting market channels based on rating
+* URL Routing (URL query parameters for market segment and channel category)
+* Advanced filtering and search function
+
+![](FunctionalityVideo.mp4)
 
 ## Set-up
 

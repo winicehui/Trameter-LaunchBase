@@ -12,13 +12,13 @@ https://launchbase-581e0.firebaseapp.com/
 * Channel Category (Ex: 'Travel Websites') : A class of market channels regarded to have shared characteristics 
 
 ## Functionalities (see Video Below for more information)
-* CRUD operations (Add, Edit, Delete, Reorder channel categories; Add, Edit, Delete Channels)
+* CRUD operations (Add, Edit, Delete, Reorder channel categories; Add, Edit, Delete market channels)
 * Real time updates (with Firebase)
 * Sorting market channels based on rating
 * URL Routing (URL query parameters for market segment and channel category)
 * Advanced filtering and search function
 
-![](FunctionalityVideo.mp4)
+https://user-images.githubusercontent.com/35130094/123926643-ef3fc400-d940-11eb-83da-f35bf041584d.mp4
 
 ## Set-up
 
